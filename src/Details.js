@@ -16,7 +16,7 @@ class Details extends Component {
   render() {
     return (
       <Row as="dl">
-        {this.renderAccountNumber()}
+        {this.renderAccountsNumber()}
         {this.renderCurrency()}
         {this.renderDates()}
       </Row>
@@ -25,29 +25,28 @@ class Details extends Component {
 
   renderCurrency() {
     const types = this.findType(TYPES["Currency"])
-    if(!types.length) { return }
 
     return types.map((type) => {
-      return this.renderType(type.ast["Qualifier"], type.ast["Amount"] + " " + type.ast["Currency Code"])
+      return this.renderType(type.ast["Qualifier"],  parseFloat(type.ast["Amount"]).toFixed(2) + " " + type.ast["Currency Code"])
     })
   }
 
   renderDates() {
     const types = this.findType(TYPES["Dates"])
-    if(!types.length) { return }
 
     return types.map((type) => {
       const date = moment(type.ast["Date"], "YYYYMMDD")
-      return this.renderType(type.ast["Qualifier"], date.format('LL') + " (" + date.fromNow() + ")")
+      return this.renderType(type.ast["Qualifier"], date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")")
     })
   }
 
-  renderAccountNumber() {
+  renderAccountsNumber() {
     const types = this.findType(TYPES["Account number"])
-    if(!types.length) { return }
-    return this.renderType("Account Number", types[0].ast["Account Number"])
-  }
 
+    return types.map((type) => {
+      return this.renderType("Account Number (" + type.ast["Qualifier"] + ")" , type.ast["Account Number"])
+    })
+  }
 
   renderType(label, value) {
     return (

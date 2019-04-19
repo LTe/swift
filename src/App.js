@@ -38,7 +38,7 @@ class App extends Component {
   }
 
   tryParse(value) {
-    value = value.replace(/\n{2,}/, '\n')
+    value = value.replace(/\n{2,}/g, '\n')
     value = value.replace(/ :/g, '\n:')
     const lines = value.split('\n')
     const block_1 = "{1:" + lines[0] + "}"
