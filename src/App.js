@@ -4,7 +4,6 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
-import Alert from 'react-bootstrap/Alert';
 import Swift from 'swift-mock';
 import JSONPretty from 'react-json-pretty';
 import './App.css';
@@ -26,12 +25,31 @@ class App extends Component {
 
   onOrderChange(event) {
     const value = event.target.value
-    this.setState({orderJSON: parser.parse(value)})
+    this.setState({orderJSON: this.parse(value)})
   }
 
   onTransactionChange(event) {
     const value = event.target.value
-    this.setState({transactionJSON: parser.parse(value)})
+    this.setState({transactionJSON: this.parse(value)})
+  }
+
+  parse(value) {
+    try {
+      return parser.parse(value)
+    } catch (e) {
+      try {
+        const lines = value.split('\n')
+        const block_1 = "{1:" + lines[0] + "}"
+        const block_2 = "{2:" + lines[1] + "}"
+        const block_3 = "{3:{" + lines[2] + "}}"
+        const block_4 = "{4:\n" + lines.slice(3).join('\n') + "\n-}"
+
+        console.log(block_1 + block_2 + block_3 + block_4)
+        return parser.parse(block_1 + block_2 + block_3 + block_4)
+      } catch (e) {
+        return e.message
+      }
+    }
   }
 
   render() {
