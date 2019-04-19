@@ -6,8 +6,8 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Swift from 'swift-mock';
 import JSONPretty from 'react-json-pretty';
+import Details from './Details';
 import './App.css';
-
 const parser = new Swift();
 
 class App extends Component {
@@ -78,6 +78,14 @@ class App extends Component {
             </Form>
           </Col>
         </Row>
+          <Row>
+            <Col xs={6}>
+              <Details parsedSwift={this.state.orderJSON}></Details>
+            </Col>
+            <Col xs={6}>
+              <Details parsedSwift={this.state.transactionJSON}></Details>
+            </Col>
+          </Row>
         <Row>
           <Col xs={6}>
             <JSONPretty data={this.state.orderJSON} />
