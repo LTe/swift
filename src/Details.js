@@ -25,7 +25,7 @@ class Details extends Component {
 
   renderCurrency() {
     const types = this.findType(TYPES["Currency"])
-    if(!types) { return }
+    if(!types.length) { return }
 
     return types.map((type) => {
       return this.renderType(type.ast["Qualifier"], type.ast["Amount"] + " " + type.ast["Currency Code"])
@@ -34,7 +34,7 @@ class Details extends Component {
 
   renderDates() {
     const types = this.findType(TYPES["Dates"])
-    if(!types) { return }
+    if(!types.length) { return }
 
     return types.map((type) => {
       const date = moment(type.ast["Date"], "YYYYMMDD")
@@ -44,7 +44,7 @@ class Details extends Component {
 
   renderAccountNumber() {
     const types = this.findType(TYPES["Account number"])
-    if(!types) { return }
+    if(!types.length) { return }
     return this.renderType("Account Number", types[0].ast["Account Number"])
   }
 
@@ -65,7 +65,7 @@ class Details extends Component {
         return element.type === attributes.type && element.option === attributes.option
       })
     } else {
-      return
+      return []
     }
   }
 }

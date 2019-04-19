@@ -10,6 +10,10 @@ import Details from './Details';
 import './App.css';
 const parser = new Swift();
 
+const FALLBACK_FORMAT = "F01TESTBIC12XXX0360105154\n" +
+  "O5641057130214TESTBIC34XXX26264938281302141757N\n" +
+  "108:2RDRQDHM3WO"
+
 class App extends Component {
 
   constructor(props) {
@@ -33,22 +37,34 @@ class App extends Component {
     this.setState({transactionJSON: this.parse(value)})
   }
 
+  tryParse(value) {
+    value = value.replace(/\n{2,}/, '\n')
+    value = value.replace(/ :/g, '\n:')
+    const lines = value.split('\n')
+    const block_1 = "{1:" + lines[0] + "}"
+    const block_2 = "{2:" + lines[1] + "}"
+    const block_3 = "{3:{" + lines[2] + "}}"
+    const block_4 = "{4:\n" + lines.slice(3).join('\n') + "\n-}"
+
+    return parser.parse(block_1 + block_2 + block_3 + block_4)
+  }
+
   parse(value) {
     try {
       return parser.parse(value)
     } catch (e) {
       try {
-        value = value.replace(/\n{2,}/, '\n')
-        const lines = value.split('\n')
-        const block_1 = "{1:" + lines[0] + "}"
-        const block_2 = "{2:" + lines[1] + "}"
-        const block_3 = "{3:{" + lines[2] + "}}"
-        const block_4 = "{4:\n" + lines.slice(3).join('\n') + "\n-}"
-
-        console.log(block_1 + block_2 + block_3 + block_4)
-        return parser.parse(block_1 + block_2 + block_3 + block_4)
+        return this.tryParse(value)
       } catch (e) {
-        return e.message
+        try {
+          return this.tryParse(FALLBACK_FORMAT + value)
+        } catch (e) {
+          try {
+            return this.tryParse(FALLBACK_FORMAT + ":\n" + value)
+          } catch (e) {
+            return e.message
+          }
+        }
       }
     }
   }
