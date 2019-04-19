@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+import Tooltip from 'react-bootstrap/Tooltip'
 import moment from 'moment';
 import 'moment/locale/pl';
 
@@ -10,6 +12,16 @@ const TYPES = {
   "Account number": {type: "97", option: "A"},
   "Dates": {type: "98", option: "A"},
   "Currency": {type: "19", option: "B"}
+}
+
+const TOOLTIPS = {
+  "PAYD": "Payment Date/Time",
+  "VALU": "Value Date/Time",
+  "EARL": "Earliest Payment Date/Time",
+  "FXDT": "FX Rate Fixing Date/Time",
+  "ENTL": "Entitled Amount",
+  "TXFR": "Tax Free Amount",
+  'NETT': "Net Cash Amount"
 }
 
 class Details extends Component {
@@ -49,9 +61,17 @@ class Details extends Component {
   }
 
   renderType(label, value) {
+
     return (
       <React.Fragment>
-        <Col as="dt" xs={5}>{label}</Col>
+          <OverlayTrigger
+            placement="left"
+            overlay={
+              <Tooltip>{TOOLTIPS[label] || "No information"}</Tooltip>
+            }
+          >
+            <Col as="dt" xs={5}>{label}</Col>
+          </OverlayTrigger>
         <Col as="dd" xs={7}>{value}</Col>
       </React.Fragment>
     )
