@@ -2,6 +2,7 @@
   "name": "swift",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://lte.github.io/swift/",
   "dependencies": {
     "bootstrap": "^4.3.1",
     "gh-pages": "^2.0.1",
