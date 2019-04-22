@@ -21,11 +21,13 @@ class App extends Component {
     super(props);
     this.state = {
       orderJSON: {},
-      transactionJSON: {}
+      transactionJSON: {},
+      accounts: []
     }
 
     this.onOrderChange = this.onOrderChange.bind(this);
     this.onTransactionChange = this.onTransactionChange.bind(this);
+    this.onAccountChange = this.onAccountChange.bind(this);
   }
 
   onOrderChange(event) {
@@ -36,6 +38,17 @@ class App extends Component {
   onTransactionChange(event) {
     const value = event.target.value
     this.setState({transactionJSON: this.parse(value)})
+  }
+
+  onAccountChange(event) {
+    const value = event.target.value
+    const lines = value.split('\n')
+    const accounts = lines.map((line) => {
+      const accountDetails =line.split(',')
+      return { account: accountDetails[0], fund: accountDetails[1], nostro: accountDetails[2] }
+    })
+
+    this.setState({accounts: accounts})
   }
 
   tryParse(value) {
@@ -103,7 +116,7 @@ class App extends Component {
         </Row>
           <Row>
             <Col xs={12}>
-              <Validator orderJSON={this.state.orderJSON} transactionJSON={this.state.transactionJSON}/>
+              <Validator orderJSON={this.state.orderJSON} transactionJSON={this.state.transactionJSON} accounts={this.state.accounts}/>
             </Col>
           </Row>
           <hr className="col-xs-12"/>
@@ -127,11 +140,16 @@ class App extends Component {
           <Col>
             <Form>
               <Form.Group controlId="exampleForm.ControlTextarea1">
-                <Form.Control placeholder="Accounts" as="textarea" rows="5"/>
+                <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={this.onAccountChange}/>
               </Form.Group>
             </Form>
           </Col>
         </Row>
+          <Row>
+            <Col>
+              <JSONPretty data={this.state.accounts} />
+            </Col>
+          </Row>
       </Container>
       </div>
     );
