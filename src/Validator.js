@@ -27,9 +27,52 @@ class Validator extends Component {
           {this.validateValueDate()}
           {this.validateTradeDate()}
           {this.validateRate()}
+          {this.validateFundAccount()}
+          {this.validateNostoAccount()}
         </Row>
       </React.Fragment>
     )
+  }
+
+  validateFundAccount() {
+    let orderAccount = this.findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
+    let fundAccount = this.findType(this.props.transactionJSON, '83', 'J')[0]
+
+    if(!orderAccount || !fundAccount) { return }
+
+    let fundAccountNumber = this.getAccountNumberFromFin(fundAccount.ast)
+    let orderAccountNumber = orderAccount.ast['Account Number']
+
+    let matchingAccount = this.props.accounts.find((mapping) => {
+      return orderAccountNumber.includes(mapping.account)
+    }) || {fund: 'Unknow number'}
+
+    let validation = matchingAccount.fund === fundAccountNumber
+
+    return this.renderType('Fund Account Number', orderAccountNumber, matchingAccount.fund, validation)
+  }
+
+  validateNostoAccount() {
+    let orderAccount = this.findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
+    let nostroAccount = this.findType(this.props.transactionJSON, '58', 'J')[0]
+
+    if(!orderAccount || !nostroAccount) { return }
+
+    let nostroAccountNumber = this.getAccountNumberFromFin(nostroAccount.ast)
+    let orderAccountNumber = orderAccount.ast['Account Number']
+
+    let matchingAccount = this.props.accounts.find((mapping) => {
+      return orderAccountNumber.includes(mapping.account)
+    }) || {nostro: 'Unknow number'}
+
+    let validation = matchingAccount.nostro === nostroAccountNumber
+
+    return this.renderType('Nostro Account Number', '', matchingAccount.nostro, validation)
+  }
+
+  getAccountNumberFromFin(ast) {
+    const identify = ast['Party Identification']
+    return identify.split('\n').find((line) => { return line.includes('ACCT/') }).split('/')[2]
   }
 
   validateRate() {
