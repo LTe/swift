@@ -58,11 +58,17 @@ class Validator extends Component {
     transactionValue = transactionValue.ast
 
     let orderValueDate = moment(orderValue['Date'], "YYYYMMDD")
-    if(!moment().isAfter(orderValueDate)) { orderValueDate = moment() }
+    let correctOrderValueDate = moment(orderValue['Date'], "YYYYMMDD")
 
-    const validation = orderValueDate.format('YYYYMMDD') === transactionValue['Date']
+    if(!moment().isAfter(orderValueDate)) { correctOrderValueDate = moment() }
 
-    return this.renderType('Trade Date', this.renderDate(orderValueDate), this.renderDate(moment(transactionValue['Date'], 'YYYYMMDD')), validation)
+    const validation = correctOrderValueDate.format('YYYYMMDD') === transactionValue['Date']
+
+    return this.renderType(
+      'Trade Date',
+      this.renderDate(orderValueDate),
+      this.renderDate(correctOrderValueDate),
+      validation)
   }
 
   validateValueDate() {
