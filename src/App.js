@@ -121,6 +121,15 @@ class App extends Component {
             <JSONPretty data={this.state.transactionJSON} />
           </Col>
         </Row>
+        <Row>
+          <Col>
+            <Form>
+              <Form.Group controlId="exampleForm.ControlTextarea1">
+                <Form.Control placeholder="Accounts" as="textarea" rows="5"/>
+              </Form.Group>
+            </Form>
+          </Col>
+        </Row>
       </Container>
       </div>
     );
