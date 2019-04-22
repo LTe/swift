@@ -21,110 +21,80 @@ class Validator extends Component {
   }
 
   validateRate() {
-    const transactionValues = this.findType(this.props.transactionJSON, {type: '36', option: undefined})
-    const transactionBuyValues = this.findType(this.props.transactionJSON, {type: '32', option: 'B'})
-    const transactionSellValues = this.findType(this.props.transactionJSON, {type: '33', option: 'B'})
+    let rate = this.findType(this.props.transactionJSON, '36')[0]
+    let buy = this.findType(this.props.transactionJSON, '32', 'B')[0]
+    let sell = this.findType(this.props.transactionJSON, '33', 'B')[0]
 
-    if(!transactionValues.length || !transactionBuyValues.length || !transactionSellValues.length) { return }
-    const buy = this.renderFloat(transactionBuyValues[0].ast['Amount'])
-    const sell = this.renderFloat(transactionSellValues[0].ast['Amount'])
-    const rate = this.renderFloat(transactionValues[0].ast['Rate'])
+    if(!rate || !buy || !sell) { return }
 
-    let valid
+    buy = this.renderFloat(buy.ast['Amount'])
+    sell = this.renderFloat(sell.ast['Amount'])
+    rate = this.renderFloat(rate.ast['Rate'])
+    const computedRate = (sell / buy).toFixed(2)
 
-    if((sell / buy).toFixed(2) === rate) {
-      valid = true
-    } else {
-      valid = false
-    }
-    return this.renderType('Rate', (sell / buy).toFixed(2), rate, valid)
+    return this.renderType('Rate', (sell / buy).toFixed(2), rate, computedRate === rate)
   }
 
   validateTradeDate() {
-    const orderValues = this.findType(this.props.orderJSON, {type: '98', option: 'A'})
-    const transactionValues = this.findType(this.props.transactionJSON, {type: '30', option: 'T'})
+    let orderValue = this.findType(this.props.orderJSON, '98', 'A', 'VALU')[0]
+    let transactionValue = this.findType(this.props.transactionJSON, '30', 'T')[0]
 
-    if(!orderValues.length || !transactionValues.length) { return }
+    if(!orderValue || !transactionValue) { return }
 
-    const orderValue = orderValues.find((value) => { return value.ast["Qualifier"] === "VALU" }).ast
-    const transactionValue = transactionValues[0].ast
+    orderValue = orderValue.ast
+    transactionValue = transactionValue.ast
 
     let orderValueDate = moment(orderValue['Date'], "YYYYMMDD")
+    if(!moment().isAfter(orderValueDate)) { orderValueDate = moment() }
 
-    if(!moment().isAfter(orderValueDate)) {
-      orderValueDate = moment()
-    }
+    const validation = orderValueDate.format('YYYYMMDD') === transactionValue['Date']
 
-    let valid
-
-    if(orderValueDate.format('YYYYMMDD') === transactionValue['Date']) {
-      valid = true
-    } else {
-      valid = false
-    }
-
-    return this.renderType('Trade Date', this.renderDate(orderValueDate), this.renderDate(moment(transactionValue['Date'], 'YYYYMMDD')), valid)
+    return this.renderType('Trade Date', this.renderDate(orderValueDate), this.renderDate(moment(transactionValue['Date'], 'YYYYMMDD')), validation)
   }
 
   validateValueDate() {
-    const orderValues = this.findType(this.props.orderJSON, {type: '98', option: 'A'})
-    const transactionValues = this.findType(this.props.transactionJSON, {type: '30', option: 'V'})
+    let orderValue = this.findType(this.props.orderJSON,'98', 'A', 'VALU')[0]
+    let transactionValue = this.findType(this.props.transactionJSON, '30', 'V')[0]
 
-    if(!orderValues.length || !transactionValues.length) { return }
+    if(!orderValue || !transactionValue) { return }
 
-    const orderValue = orderValues.find((value) => { return value.ast["Qualifier"] === "VALU" }).ast
-    const transactionValue = transactionValues[0].ast
+    orderValue = orderValue.ast
+    transactionValue = transactionValue.ast
 
     let orderValueDate = moment(orderValue['Date'], "YYYYMMDD")
+    const validation = orderValueDate.format('YYYYMMDD') === transactionValue['Date']
 
-    let valid
-
-    if(orderValueDate.format('YYYYMMDD') === transactionValue['Date']) {
-      valid = true
-    } else {
-      valid = false
-    }
-
-    return this.renderType('Value Date', this.renderDate(orderValueDate), this.renderDate(moment(transactionValue['Date'], 'YYYYMMDD')), valid)
+    return this.renderType('Value Date', this.renderDate(orderValueDate), this.renderDate(moment(transactionValue['Date'], 'YYYYMMDD')), validation)
   }
 
-  renderDate(date) {
-    return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
-  }
 
   validatePstaAmount() {
-    const orderValues = this.findType(this.props.orderJSON, {type: '19', option: 'B'})
-    const transactionValues = this.findType(this.props.transactionJSON, {type: '32', option: 'B'})
+    let orderValue = this.findType(this.props.orderJSON,'19', 'B', 'PSTA')[0]
+    let transactionValue = this.findType(this.props.transactionJSON, '32', 'B')[0]
 
-    if(!orderValues.length || !transactionValues.length) { return }
-    const orderValue = orderValues.find((value) => { return value.ast["Qualifier"] === "PSTA" }).ast
-    const transactionValue = transactionValues[0].ast
+    if(!orderValue || !transactionValue) { return }
+
+    orderValue = orderValue.ast
+    transactionValue = transactionValue.ast
 
     return this.renderAmountValidator(orderValue, transactionValue, 'Buy Currency Amount')
   }
 
   validateNettAmount() {
-    const orderValues = this.findType(this.props.orderJSON, {type: '19', option: 'B'})
-    const transactionValues = this.findType(this.props.transactionJSON, {type: '33', option: 'B'})
+    let orderValue = this.findType(this.props.orderJSON, '19', 'B', 'NETT')[0]
+    let transactionValue = this.findType(this.props.transactionJSON, '33', 'B')[0]
 
-    if(!orderValues.length || !transactionValues.length) { return }
+    if(!orderValue || !transactionValue) { return }
 
-    const orderValue = orderValues.find((value) => { return value.ast["Qualifier"] === "NETT" }).ast
-    const transactionValue = transactionValues[0].ast
+    orderValue = orderValue.ast
+    transactionValue = transactionValue.ast
 
     return this.renderAmountValidator(orderValue, transactionValue, 'Sell Currency Amount')
   }
 
   renderAmountValidator(orderValue, transactionValue, label) {
-    let valid
-
-    if(this.renderFloat(orderValue['Amount']) === this.renderFloat(transactionValue['Amount']) && orderValue['Currency Code'] === transactionValue['Currency']) {
-      valid = true
-    } else {
-      valid = false
-    }
-
-    return this.renderType(label, this.renderCurrency(orderValue), this.renderCurrency(transactionValue), valid)
+    const validation = this.renderFloat(orderValue['Amount']) === this.renderFloat(transactionValue['Amount']) && orderValue['Currency Code'] === transactionValue['Currency']
+    return this.renderType(label, this.renderCurrency(orderValue), this.renderCurrency(transactionValue), validation)
   }
 
   renderCurrency(ast) {
@@ -133,6 +103,10 @@ class Validator extends Component {
 
   renderFloat(floatSting, precision = 2) {
     return parseFloat(floatSting.replace(',', '.')).toFixed(precision)
+  }
+
+  renderDate(date) {
+    return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
   }
 
   renderType(label, valueLeft, valueRight, valid) {
@@ -149,12 +123,12 @@ class Validator extends Component {
     )
   }
 
-  findType(json, attributes) {
+  findType(json, type, option, qualifier) {
     const details = json['block4']
     if(details) {
-      return details.filter((element)=> {
-        return element.type === attributes.type && element.option === attributes.option
-      })
+       return details.filter((element)=> {
+         return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
+       }) || []
     } else {
       return []
     }
