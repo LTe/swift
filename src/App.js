@@ -45,7 +45,8 @@ class App extends Component {
     const lines = value.split('\n')
     const accounts = lines.map((line) => {
       const accountDetails =line.split(',')
-      return { account: accountDetails[0], fund: accountDetails[1], nostro: accountDetails[2] }
+      const fundAccount = (accountDetails[1] || '').slice(0, -5) + '5-000'
+      return { account: accountDetails[0], fund: fundAccount, nostro: accountDetails[2] }
     })
 
     this.setState({accounts: accounts})
