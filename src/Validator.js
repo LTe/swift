@@ -37,7 +37,7 @@ class Validator extends Component {
     } else {
       valid = false
     }
-    return this.renderType('Rate', (buy / sell).toFixed(2), rate, valid)
+    return this.renderType('Rate', (sell / buy).toFixed(2), rate, valid)
   }
 
   validateTradeDate() {
