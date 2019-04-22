@@ -45,6 +45,8 @@ class Details extends Component {
         {this.renderAccountsNumber()}
         {this.renderCurrencyField()}
         {this.renderDates()}
+        {this.renderCustomField('83', 'J', 'Fund number', (ast) => { return this.getAccountNumberFromFin(ast) })}
+        {this.renderCustomField('58', 'J', 'Nostro number', (ast) => { return this.getAccountNumberFromFin(ast) })}
         {this.renderField("92", "B", (ast) => { return this.renderRate(ast) })}
         {this.renderField("20", undefined, (ast) => { return ast['Value'] })}
         {this.renderField("83", 'J', (ast) => { return this.renderIdentification(ast['Party Identification']) })}
@@ -69,6 +71,11 @@ class Details extends Component {
     })
   }
 
+  getAccountNumberFromFin(ast) {
+    const identify = ast['Party Identification']
+    return identify.split('\n').find((line) => { return line.includes('ACCT/') }).split('/')[2]
+  }
+
   renderDate(dateString) {
     const date = moment(dateString, "YYYYMMDD")
     return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
@@ -80,6 +87,14 @@ class Details extends Component {
 
   renderCurrency(amount, currency) {
     return this.renderFloat(amount) + " " + currency
+  }
+
+  renderCustomField(type, option, name, mapper) {
+    const fields = this.findType({type: type, option: option})
+
+    return fields.map((field) => {
+      return this.renderType(name, mapper(field.ast))
+    })
   }
 
   renderField(type, option, mapper) {
