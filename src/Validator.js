@@ -32,7 +32,7 @@ class Validator extends Component {
 
     let valid
 
-    if((buy / sell).toFixed(2) === rate) {
+    if((sell / buy).toFixed(2) === rate) {
       valid = true
     } else {
       valid = false
