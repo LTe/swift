@@ -8,6 +8,7 @@ import Swift from 'swift-mock';
 import JSONPretty from 'react-json-pretty';
 import Details from './Details';
 import './App.css';
+import Validator from "./Validator";
 const parser = new Swift();
 
 const FALLBACK_FORMAT = "F01TESTBIC12XXX0360105154\n" +
@@ -40,6 +41,9 @@ class App extends Component {
   tryParse(value) {
     value = value.replace(/\n{2,}/g, '\n')
     value = value.replace(/ :/g, '\n:')
+    value = value.replace(/15A:/g, "15A: ")
+    value = value.replace(/15B:/g, "15B: ")
+
     const lines = value.split('\n')
     const block_1 = "{1:" + lines[0] + "}"
     const block_2 = "{2:" + lines[1] + "}"
@@ -94,14 +98,21 @@ class App extends Component {
             </Form>
           </Col>
         </Row>
+          <hr className="col-xs-12"/>
           <Row>
-            <Col xs={6}>
-              <Details parsedSwift={this.state.orderJSON}></Details>
-            </Col>
-            <Col xs={6}>
-              <Details parsedSwift={this.state.transactionJSON}></Details>
+            <Col xs={12}>
+              <Validator orderJSON={this.state.orderJSON} transactionJSON={this.state.transactionJSON}/>
             </Col>
           </Row>
+          <hr className="col-xs-12"/>
+        <Row>
+          <Col xs={6}>
+            <Details parsedSwift={this.state.orderJSON}></Details>
+          </Col>
+          <Col xs={6}>
+            <Details parsedSwift={this.state.transactionJSON}></Details>
+          </Col>
+        </Row>
         <Row>
           <Col xs={6}>
             <JSONPretty data={this.state.orderJSON} />

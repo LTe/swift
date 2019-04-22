@@ -14,6 +14,19 @@ const TYPES = {
   "Currency": {type: "19", option: "B"}
 }
 
+const FIELDS_DESCRIPTION = {
+  "20": "Sender's Reference",
+  "38J": "Client",
+  "83J": "Fund",
+  "30T": "Trade Date",
+  "30V": "Value Date",
+  "36": "Exchange Rate",
+  "32B": "Amount Bought",
+  "53A": "Delivery Agent",
+  "33B": "Amount Sold",
+  "58J": "Beneficiary Institution"
+}
+
 const TOOLTIPS = {
   "PAYD": "Payment Date/Time",
   "VALU": "Value Date/Time",
@@ -29,17 +42,53 @@ class Details extends Component {
     return (
       <Row as="dl">
         {this.renderAccountsNumber()}
-        {this.renderCurrency()}
+        {this.renderCurrencyField()}
         {this.renderDates()}
+        {this.renderField("20", undefined, (ast) => { return ast['Value'] })}
+        {this.renderField("83", 'J', (ast) => { return this.renderIdentification(ast['Party Identification']) })}
+        {this.renderField("30", 'T', (ast) => { return this.renderDate(ast['Date']) })}
+        {this.renderField("30", 'V', (ast) => { return this.renderDate(ast['Date']) })}
+        {this.renderField("36", undefined, (ast) => { return this.renderFloat(ast['Rate']) })}
+        {this.renderField("32", 'B', (ast) => { return this.renderCurrency(ast['Amount'], ast['Currency']) })}
+        {this.renderField("33", 'B', (ast) => { return this.renderCurrency(ast['Amount'], ast['Currency']) })}
+        {this.renderField("53", 'A', (ast) => { return ast['Identifier Code'] })}
+        {this.renderField("58", 'J', (ast) => { return this.renderIdentification(ast['Party Identification'])})}
       </Row>
     )
   }
 
-  renderCurrency() {
+  renderIdentification(name) {
+    return name.split('\n').map((item, i) => {
+      return <p key={i}>{item}</p>;
+    })
+  }
+
+  renderDate(dateString) {
+    const date = moment(dateString, "YYYYMMDD")
+    return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
+  }
+
+  renderFloat(floatSting, precision = 2) {
+    return parseFloat(floatSting.replace(',', '.')).toFixed(precision)
+  }
+
+  renderCurrency(amount, currency) {
+    return this.renderFloat(amount) + " " + currency
+  }
+
+  renderField(type, option, mapper) {
+    const fields = this.findType({type: type, option: option})
+
+    return fields.map((field) => {
+      return this.renderType(FIELDS_DESCRIPTION[[type, option].join('')], mapper(field.ast))
+    })
+  }
+
+  renderCurrencyField() {
     const types = this.findType(TYPES["Currency"])
 
     return types.map((type) => {
-      return this.renderType(type.ast["Qualifier"],  parseFloat(type.ast["Amount"]).toFixed(2) + " " + type.ast["Currency Code"])
+      return this.renderType(type.ast["Qualifier"],  this.renderCurrency(type.ast['Amount'], type.ast['Currency'] || type.ast['Currency Code']))
     })
   }
 
