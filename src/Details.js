@@ -24,7 +24,8 @@ const FIELDS_DESCRIPTION = {
   "32B": "Amount Bought",
   "53A": "Delivery Agent",
   "33B": "Amount Sold",
-  "58J": "Beneficiary Institution"
+  "58J": "Beneficiary Institution",
+  "92B": "Rate"
 }
 
 const TOOLTIPS = {
@@ -44,6 +45,7 @@ class Details extends Component {
         {this.renderAccountsNumber()}
         {this.renderCurrencyField()}
         {this.renderDates()}
+        {this.renderField("92", "B", (ast) => { return this.renderRate(ast) })}
         {this.renderField("20", undefined, (ast) => { return ast['Value'] })}
         {this.renderField("83", 'J', (ast) => { return this.renderIdentification(ast['Party Identification']) })}
         {this.renderField("30", 'T', (ast) => { return this.renderDate(ast['Date']) })}
@@ -55,6 +57,10 @@ class Details extends Component {
         {this.renderField("58", 'J', (ast) => { return this.renderIdentification(ast['Party Identification'])})}
       </Row>
     )
+  }
+
+  renderRate(ast) {
+    return ast['First Currency Code'] + '/' + ast['Second Currency Code'] + ' ' + this.renderFloat(ast['Rate'])
   }
 
   renderIdentification(name) {

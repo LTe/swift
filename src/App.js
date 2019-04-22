@@ -77,9 +77,12 @@ class App extends Component {
     return (
       <div>
         <Navbar bg="dark" variant="dark" className="mb-2">
-          <Navbar.Brand href="#home">
-            {'Swift Validator'}
-          </Navbar.Brand>
+          <Navbar.Brand href="#home">{'Swift Validator'}</Navbar.Brand>
+          <Navbar.Collapse className="justify-content-end">
+            <Navbar.Text>
+              Version: <strong>{process.env.REACT_APP_GIT_SHA}</strong>
+            </Navbar.Text>
+          </Navbar.Collapse>
         </Navbar>
         <Container className="mb-0">
         <Row>
@@ -98,7 +101,6 @@ class App extends Component {
             </Form>
           </Col>
         </Row>
-          <hr className="col-xs-12"/>
           <Row>
             <Col xs={12}>
               <Validator orderJSON={this.state.orderJSON} transactionJSON={this.state.transactionJSON}/>

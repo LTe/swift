@@ -10,29 +10,42 @@ import './App.css';
 class Validator extends Component {
   render() {
     return (
-      <Row>
-        {this.validateNettAmount()}
-        {this.validatePstaAmount()}
-        {this.validateValueDate()}
-        {this.validateTradeDate()}
-        {this.validateRate()}
-      </Row>
+      <React.Fragment>
+        <Row className="center">
+        <Col md="4" xs={4}><strong>What the order contains</strong></Col>
+        <Col xs={4}>
+          <Badge className="mr-sm-2" variant='success'>Valid</Badge>
+          <Badge variant='danger'>Invalid</Badge>
+        </Col>
+          <Col xs={4}><strong>What it should be</strong></Col>
+        </Row>
+        <hr className="col-xs-12"/>
+        <Row>
+          {this.validateNettAmount()}
+          {this.validatePstaAmount()}
+          {this.validateValueDate()}
+          {this.validateTradeDate()}
+          {this.validateRate()}
+        </Row>
+      </React.Fragment>
     )
   }
 
   validateRate() {
+    let orderRate = this.findType(this.props.orderJSON, '92', 'B', 'EXCH')[0]
     let rate = this.findType(this.props.transactionJSON, '36')[0]
     let buy = this.findType(this.props.transactionJSON, '32', 'B')[0]
     let sell = this.findType(this.props.transactionJSON, '33', 'B')[0]
 
-    if(!rate || !buy || !sell) { return }
+    if(!rate || !buy || !sell || !orderRate) { return }
 
     buy = this.renderFloat(buy.ast['Amount'])
     sell = this.renderFloat(sell.ast['Amount'])
     rate = this.renderFloat(rate.ast['Rate'])
+    orderRate = this.renderFloat(orderRate.ast['Rate'])
     const computedRate = (sell / buy).toFixed(2)
 
-    return this.renderType('Rate', (sell / buy).toFixed(2), rate, computedRate === rate)
+    return this.renderType('Rate', orderRate, rate + ' (Calculated: ' + computedRate + ')', rate === orderRate)
   }
 
   validateTradeDate() {
