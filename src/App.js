@@ -5,12 +5,12 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
-import Swift from 'swift-mock';
+import SwiftParser from 'swift-mock/lib/swiftParser';
 import JSONPretty from 'react-json-pretty';
 import Details from './Details';
 import './App.css';
 import Validator from "./Validator";
-const parser = new Swift();
+const parser = new SwiftParser();
 
 const FALLBACK_FORMAT = "F01TESTBIC12XXX0360105154\n" +
   "O5641057130214TESTBIC34XXX26264938281302141757N\n" +
@@ -56,8 +56,6 @@ class App extends Component {
   tryParse(value) {
     value = value.replace(/\n{2,}/g, '\n')
     value = value.replace(/ :/g, '\n:')
-    value = value.replace(/15A:/g, "15A: ")
-    value = value.replace(/15B:/g, "15B: ")
 
     const lines = value.split('\n')
     const block_1 = "{1:" + lines[0] + "}"
