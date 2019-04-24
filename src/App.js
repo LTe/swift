@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -92,6 +93,11 @@ class App extends Component {
       <div>
         <Navbar bg="dark" variant="dark" className="mb-2">
           <Navbar.Brand href="#home">{'Swift Validator'}</Navbar.Brand>
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="mr-auto">
+              <Nav.Link href="./static.html">Static Version</Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
           <Navbar.Collapse className="justify-content-end">
             <Navbar.Text>
               Version: <strong>{process.env.REACT_APP_GIT_SHA}</strong>

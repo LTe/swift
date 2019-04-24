@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
-import JSONPretty from 'react-json-pretty';
 import moment from 'moment';
 import 'moment/locale/pl';
 

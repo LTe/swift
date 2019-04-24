@@ -2,10 +2,11 @@
   "name": "swift",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://lte.github.io/swift/",
+  "homepage": ".",
   "dependencies": {
     "bootstrap": "^4.3.1",
     "gh-pages": "^2.0.1",
+    "inliner": "^1.13.1",
     "moment": "^2.24.0",
     "react": "^16.8.6",
     "react-bootstrap": "^1.0.0-beta.8",
@@ -18,7 +19,7 @@
     "predeploy": "yarn run build",
     "deploy": "gh-pages -d build",
     "start": "REACT_APP_GIT_SHA=`git rev-parse --short HEAD` react-scripts start",
-    "build": "REACT_APP_GIT_SHA=`git rev-parse --short HEAD` react-scripts build",
+    "build": "REACT_APP_GIT_SHA=`git rev-parse --short HEAD` react-scripts build && inliner build/index.html > build/static.html",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
