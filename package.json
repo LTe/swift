@@ -13,7 +13,8 @@
     "react-dom": "^16.8.6",
     "react-json-pretty": "^2.1.0",
     "react-scripts": "2.1.8",
-    "swift-mock": "LTe/swift-mock#support-for-empty-fields-browsers-and-missing-fields"
+    "swift-mock": "LTe/swift-mock#support-for-empty-fields-browsers-and-missing-fields",
+    "underscore": "^1.9.1"
   },
   "scripts": {
     "predeploy": "yarn run build",
