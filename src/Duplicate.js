@@ -2,13 +2,33 @@ import React, {Component} from 'react';
 import './App.css';
 import Badge from "react-bootstrap/Badge";
 import Table from "react-bootstrap/Table";
+import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
 
 class Duplicate extends Component {
   render() {
-    if (this.props.isDuplicate) {
-      return (
-          <React.Fragment>
-            <Badge pill variant="danger"> Is duplicate </Badge>
+    const badge = this.props.isDuplicate ? (<Badge pill variant="danger"> Is duplicate </Badge>) : (<Badge pill variant="success"> Is not duplicate </Badge>)
+
+    return (
+        <Container>
+          <Row>{badge}</Row>
+          <Row><h4>Possible duplicates</h4></Row>
+          <Row>
+          <Table className="mt-2" striped bordered hover>
+            <thead>
+            <tr>
+              <th>Value date</th>
+              <th>Exotic currency amount</th>
+              <th>USD amount</th>
+            </tr>
+            </thead>
+            <tbody>
+              {this.renderDuplicateDetails()}
+            </tbody>
+          </Table>
+          </Row>
+          <Row><h4>All swifts</h4></Row>
+          <Row>
             <Table className="mt-2" striped bordered hover>
               <thead>
               <tr>
@@ -18,15 +38,36 @@ class Duplicate extends Component {
               </tr>
               </thead>
               <tbody>
-                {this.renderDuplicateDetails()}
+                {this.renderDetails()}
               </tbody>
             </Table>
-          </React.Fragment>
-      )
-    } else {
-      return (<Badge pill variant="success"> Is not duplicate </Badge>)
-    }
+          </Row>
+        </Container>
+    )
   }
+
+  renderDetails() {
+    const renderedValues = this.props.mappedSwifts.map((value) => {
+      const valueDate = this.findType(value, "98", "A", "VALU")[0]
+      const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
+      const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
+
+      try {
+        return this.renderRow(valueDate, exoticCurr, usdCurr)
+      } catch (e) {
+        return (
+          <tr>
+            <td>Unable to display</td>
+            <td>Unable to display</td>
+            <td>Unable to display</td>
+          </tr>
+        )
+      }
+    })
+
+    return renderedValues
+  }
+
   renderDuplicateDetails() {
     const renderedValues = this.props.duplicateValues.map((value) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]

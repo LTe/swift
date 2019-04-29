@@ -29,7 +29,8 @@ class App extends Component {
       transactionJSON: {},
       accounts: [],
       isDuplicate: false,
-      duplicateValues: []
+      duplicateValues: [],
+      mappedSwifts: []
     }
 
     this.onOrderChange = this.onOrderChange.bind(this);
@@ -54,7 +55,8 @@ class App extends Component {
     this.setState(
       {
         isDuplicate: duplicateDetected,
-        duplicateValues: duplicatedOrders
+        duplicateValues: duplicatedOrders,
+        mappedSwifts: mappedSwifts
       }
     )
   }
@@ -201,7 +203,7 @@ class App extends Component {
                   </Col>
                 </Row>
                 <Row>
-                  <Duplicate isDuplicate={this.state.isDuplicate} duplicateValues={this.state.duplicateValues}/>
+                  <Duplicate isDuplicate={this.state.isDuplicate} mappedSwifts={this.state.mappedSwifts} duplicateValues={this.state.duplicateValues}/>
                 </Row>
               </Container>
             </Tab>
