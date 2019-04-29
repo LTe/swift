@@ -43,14 +43,14 @@ class App extends Component {
     const mappedSwifts = swifts.map((swift) => {
       return this.parse(swift)
     })
-    const uniqueSwifts = Array.from(new Set(swifts))
-    const duplicateDetected = swifts.length !== uniqueSwifts.length
     const duplicatedOrders = mappedSwifts.filter((order) => {
       return mappedSwifts.filter(
       (swift) => {
         return isEqual(swift, order)
       }).length > 1
     })
+    const duplicateDetected = duplicatedOrders.length > 0
+
     this.setState(
       {
         isDuplicate: duplicateDetected,
@@ -89,7 +89,7 @@ class App extends Component {
     const block_1 = "{1:" + lines[0] + "}"
     const block_2 = "{2:" + lines[1] + "}"
     const block_3 = "{3:{" + lines[2] + "}}"
-    const block_4 = "{4:\n" + lines.slice(3).join('\n') + "\n-}"
+    const block_4 = "{4:\n" + lines.slice(3).join('\n').replace('\n-', '').trim() + "\n-}"
 
     return parser.parse(block_1 + block_2 + block_3 + block_4)
   }

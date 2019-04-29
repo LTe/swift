@@ -32,15 +32,30 @@ class Duplicate extends Component {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
-      return (
+
+      try {
+        return this.renderRow(valueDate, exoticCurr, usdCurr)
+      } catch (e) {
+        return (
           <tr>
-            <td>{valueDate.ast.Date}</td>
-            <td>{exoticCurr.ast.Amount} {exoticCurr.ast["Currency Code"]}</td>
-            <td>{usdCurr.ast.Amount} {usdCurr.ast["Currency Code"]}</td>
+            <td>Unable to display</td>
+            <td>Unable to display</td>
+            <td>Unable to display</td>
           </tr>
-      )
+        )
+      }
     })
     return renderedValues
+  }
+
+  renderRow(valueDate, exoticCurr, usdCurr) {
+    return (
+      <tr>
+        <td>{valueDate.ast.Date}</td>
+        <td>{exoticCurr.ast.Amount} {exoticCurr.ast["Currency Code"]}</td>
+        <td>{usdCurr.ast.Amount} {usdCurr.ast["Currency Code"]}</td>
+      </tr>
+    )
   }
 
   findType(json, type, option, qualifier) {
