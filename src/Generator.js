@@ -79,11 +79,11 @@ class Generator extends Component {
 
       let transaction = this.state.rawTemplates[matchingTemplateIndex].slice()
 
-      transaction = transaction.replace('30V:', '30V:' + valueDate.ast.Date)
-      transaction = transaction.replace('30T:', '30T:' + tradeDate.ast.Date)
-      transaction = transaction.replace('33B:', '33B:' + sellAmount.ast['Currency Code'] + sellAmount.ast.Amount)
-      transaction = transaction.replace('32B:', '32B:' + buyAmount.ast['Currency Code'] + buyAmount.ast.Amount)
-      transaction = transaction.replace('36:', '36:' + rate.ast.Rate)
+      transaction = transaction.replace(/30V:.*\n/, '30V:' + valueDate.ast.Date + "\n")
+      transaction = transaction.replace(/30T:.*\n/, '30T:' + tradeDate.ast.Date + "\n")
+      transaction = transaction.replace(/33B:.*\n/, '33B:' + sellAmount.ast['Currency Code'] + sellAmount.ast.Amount + "\n")
+      transaction = transaction.replace(/32B:.*\n/, '32B:' + buyAmount.ast['Currency Code'] + buyAmount.ast.Amount + "\n")
+      transaction = transaction.replace(/36:.*\n/, '36:' + rate.ast.Rate + "\n")
 
       return transaction
 
@@ -96,7 +96,7 @@ class Generator extends Component {
     const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
 
     if (!moment().isAfter(orderValueDate)) {
-      return {'ast': {'DATE': moment().format('YYYYMMDD')} }
+      return {'ast': {'Date': moment().format('YYYYMMDD')} }
     } else {
       return date
     }
