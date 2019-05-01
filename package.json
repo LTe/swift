@@ -13,6 +13,7 @@
     "react-dom": "^16.8.6",
     "react-json-pretty": "^2.1.0",
     "react-scripts": "2.1.8",
+    "react-syntax-highlighter": "^10.2.1",
     "swift-mock": "LTe/swift-mock#support-for-empty-fields-browsers-and-missing-fields",
     "underscore": "^1.9.1"
   },

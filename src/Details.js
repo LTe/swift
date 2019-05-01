@@ -82,7 +82,7 @@ class Details extends Component {
   }
 
   renderFloat(floatSting, precision = 2) {
-    return parseFloat(floatSting.replace(',', '.')).toFixed(precision)
+    return parseFloat((floatSting || '').replace(',', '.')).toFixed(precision)
   }
 
   renderCurrency(amount, currency) {

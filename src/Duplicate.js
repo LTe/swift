@@ -7,13 +7,14 @@ import Container from "react-bootstrap/Container";
 
 class Duplicate extends Component {
   render() {
-    const badge = this.props.isDuplicate ? (<Badge pill variant="danger"> Is duplicate </Badge>) : (<Badge pill variant="success"> Is not duplicate </Badge>)
+    const badge = this.props.isDuplicate ? (<Badge pill variant="danger"> Is duplicate </Badge>) : (
+      <Badge pill variant="success"> Is not duplicate </Badge>)
 
     return (
-        <Container>
-          <Row>{badge}</Row>
-          <Row><h4>Possible duplicates</h4></Row>
-          <Row>
+      <Container>
+        <Row>{badge}</Row>
+        <Row><h4>Possible duplicates</h4></Row>
+        <Row>
           <Table className="mt-2" striped bordered hover>
             <thead>
             <tr>
@@ -22,27 +23,23 @@ class Duplicate extends Component {
               <th>USD amount</th>
             </tr>
             </thead>
-            <tbody>
-              {this.renderDuplicateDetails()}
-            </tbody>
+            <tbody>{this.renderDuplicateDetails()}</tbody>
           </Table>
-          </Row>
-          <Row><h4>All swifts</h4></Row>
-          <Row>
-            <Table className="mt-2" striped bordered hover>
-              <thead>
-              <tr>
-                <th>Value date</th>
-                <th>Exotic currency amount</th>
-                <th>USD amount</th>
-              </tr>
-              </thead>
-              <tbody>
-                {this.renderDetails()}
-              </tbody>
-            </Table>
-          </Row>
-        </Container>
+        </Row>
+        <Row><h4>All swifts</h4></Row>
+        <Row>
+          <Table className="mt-2" striped bordered hover>
+            <thead>
+            <tr>
+              <th>Value date</th>
+              <th>Exotic currency amount</th>
+              <th>USD amount</th>
+            </tr>
+            </thead>
+            <tbody>{this.renderDetails()}</tbody>
+          </Table>
+        </Row>
+      </Container>
     )
   }
 
@@ -101,8 +98,8 @@ class Duplicate extends Component {
 
   findType(json, type, option, qualifier) {
     const details = json['block4']
-    if(details) {
-      return details.filter((element)=> {
+    if (details) {
+      return details.filter((element) => {
         return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
       }) || []
     } else {

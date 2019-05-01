@@ -4,6 +4,7 @@ import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
 import moment from 'moment';
 import 'moment/locale/pl';
+import {getAccountNumberFromFin, findType} from './utils'
 
 import './App.css';
 
@@ -34,12 +35,12 @@ class Validator extends Component {
   }
 
   validateFundAccount() {
-    let orderAccount = this.findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
-    let fundAccount = this.findType(this.props.transactionJSON, '83', 'J')[0]
+    let orderAccount = findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
+    let fundAccount = findType(this.props.transactionJSON, '83', 'J')[0]
 
     if(!orderAccount || !fundAccount) { return }
 
-    let fundAccountNumber = this.getAccountNumberFromFin(fundAccount.ast)
+    let fundAccountNumber = getAccountNumberFromFin(fundAccount.ast)
     let orderAccountNumber = orderAccount.ast['Account Number']
 
     let matchingAccount = this.props.accounts.find((mapping) => {
@@ -52,12 +53,12 @@ class Validator extends Component {
   }
 
   validateNostoAccount() {
-    let orderAccount = this.findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
-    let nostroAccount = this.findType(this.props.transactionJSON, '58', 'J')[0]
+    let orderAccount = findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
+    let nostroAccount = findType(this.props.transactionJSON, '58', 'J')[0]
 
     if(!orderAccount || !nostroAccount) { return }
 
-    let nostroAccountNumber = this.getAccountNumberFromFin(nostroAccount.ast)
+    let nostroAccountNumber = getAccountNumberFromFin(nostroAccount.ast)
     let orderAccountNumber = orderAccount.ast['Account Number']
 
     let matchingAccount = this.props.accounts.find((mapping) => {
@@ -69,16 +70,11 @@ class Validator extends Component {
     return this.renderType('Nostro Account Number', '', matchingAccount.nostro, validation)
   }
 
-  getAccountNumberFromFin(ast) {
-    const identify = ast['Party Identification']
-    return identify.split('\n').find((line) => { return line.includes('ACCT/') }).split('/')[2]
-  }
-
   validateRate() {
-    let orderRate = this.findType(this.props.orderJSON, '92', 'B', 'EXCH')[0]
-    let rate = this.findType(this.props.transactionJSON, '36')[0]
-    let buy = this.findType(this.props.transactionJSON, '32', 'B')[0]
-    let sell = this.findType(this.props.transactionJSON, '33', 'B')[0]
+    let orderRate = findType(this.props.orderJSON, '92', 'B', 'EXCH')[0]
+    let rate = findType(this.props.transactionJSON, '36')[0]
+    let buy = findType(this.props.transactionJSON, '32', 'B')[0]
+    let sell = findType(this.props.transactionJSON, '33', 'B')[0]
 
     if(!rate || !buy || !sell || !orderRate) { return }
 
@@ -92,8 +88,8 @@ class Validator extends Component {
   }
 
   validateTradeDate() {
-    let orderValue = this.findType(this.props.orderJSON, '98', 'A', 'VALU')[0]
-    let transactionValue = this.findType(this.props.transactionJSON, '30', 'T')[0]
+    let orderValue = findType(this.props.orderJSON, '98', 'A', 'VALU')[0]
+    let transactionValue = findType(this.props.transactionJSON, '30', 'T')[0]
 
     if(!orderValue || !transactionValue) { return }
 
@@ -115,8 +111,8 @@ class Validator extends Component {
   }
 
   validateValueDate() {
-    let orderValue = this.findType(this.props.orderJSON,'98', 'A', 'VALU')[0]
-    let transactionValue = this.findType(this.props.transactionJSON, '30', 'V')[0]
+    let orderValue = findType(this.props.orderJSON,'98', 'A', 'VALU')[0]
+    let transactionValue = findType(this.props.transactionJSON, '30', 'V')[0]
 
     if(!orderValue || !transactionValue) { return }
 
@@ -131,8 +127,8 @@ class Validator extends Component {
 
 
   validatePstaAmount() {
-    let orderValue = this.findType(this.props.orderJSON,'19', 'B', 'PSTA')[0]
-    let transactionValue = this.findType(this.props.transactionJSON, '32', 'B')[0]
+    let orderValue = findType(this.props.orderJSON,'19', 'B', 'PSTA')[0]
+    let transactionValue = findType(this.props.transactionJSON, '32', 'B')[0]
 
     if(!orderValue || !transactionValue) { return }
 
@@ -143,8 +139,8 @@ class Validator extends Component {
   }
 
   validateNettAmount() {
-    let orderValue = this.findType(this.props.orderJSON, '19', 'B', 'NETT')[0]
-    let transactionValue = this.findType(this.props.transactionJSON, '33', 'B')[0]
+    let orderValue = findType(this.props.orderJSON, '19', 'B', 'NETT')[0]
+    let transactionValue = findType(this.props.transactionJSON, '33', 'B')[0]
 
     if(!orderValue || !transactionValue) { return }
 
@@ -183,17 +179,6 @@ class Validator extends Component {
         <Col className="justify-content-center" xs={4}>{valueRight}</Col>
       </React.Fragment>
     )
-  }
-
-  findType(json, type, option, qualifier) {
-    const details = json['block4']
-    if(details) {
-       return details.filter((element)=> {
-         return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
-       }) || []
-    } else {
-      return []
-    }
   }
 }
 
