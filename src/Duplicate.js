@@ -4,6 +4,7 @@ import Badge from "react-bootstrap/Badge";
 import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 class Duplicate extends Component {
   render() {
@@ -28,41 +29,38 @@ class Duplicate extends Component {
         </Row>
         <Row><h4>All swifts</h4></Row>
         <Row>
-          <Table className="mt-2" striped bordered hover>
-            <thead>
-            <tr>
-              <th>Value date</th>
-              <th>Exotic currency amount</th>
-              <th>USD amount</th>
-            </tr>
-            </thead>
-            <tbody>{this.renderDetails()}</tbody>
-          </Table>
+          {this.renderDetails()}
         </Row>
       </Container>
     )
   }
 
   renderDetails() {
-    const renderedValues = this.props.mappedSwifts.map((value) => {
+    const mappeddValues = this.props.mappedSwifts.map((value, id) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
 
       try {
-        return this.renderRow(valueDate, exoticCurr, usdCurr)
+        return {
+          valueDate: valueDate.ast.Date,
+          exoticCurr: exoticCurr.ast.Amount + ' ' + exoticCurr.ast["Currency Code"],
+          usdCurr: usdCurr.ast.Amount + ' ' + usdCurr.ast["Currency Code"]
+        }
       } catch (e) {
-        return (
-          <tr>
-            <td>Unable to display</td>
-            <td>Unable to display</td>
-            <td>Unable to display</td>
-          </tr>
-        )
+        return { valueDate: 'Unable to display', exoticCurr: 'Unable to display', usdCurr: 'Unable to display' }
       }
     })
 
-    return renderedValues
+    console.log(mappeddValues)
+
+    return (
+      <BootstrapTable data={mappeddValues} striped hover>
+        <TableHeaderColumn isKey dataField='valueDate' dataSort={ true }>Value Date</TableHeaderColumn>
+        <TableHeaderColumn dataField='exoticCurr' dataSort={ true }>Exotic Currency</TableHeaderColumn>
+        <TableHeaderColumn dataField='usdCurr' dataSort={ true }>USD Currency</TableHeaderColumn>
+      </BootstrapTable>
+    )
   }
 
   renderDuplicateDetails() {
