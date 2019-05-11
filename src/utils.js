@@ -1,5 +1,7 @@
 import patterns from "./metadata/patterns.json"
 import SwiftParser from 'swift-mock/lib/swiftParser'
+import moment from 'moment'
+import 'moment/locale/pl'
 
 const FALLBACK_FORMAT = "F01TESTBIC12XXX0360105154\n" +
   "O5641057130214TESTBIC34XXX26264938281302141757N\n" +
@@ -58,12 +60,41 @@ export function getAccountNumberFromFin(ast) {
 }
 
 export function findType(json, type, option, qualifier) {
-  const details = json['block4']
-  if(details) {
-    return details.filter((element)=> {
-      return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
-    }) || []
-  } else {
+  try {
+    const details = json['block4']
+    if(details) {
+      return details.filter((element)=> {
+        return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
+      }) || []
+    } else {
+      return []
+    }
+  } catch (e) {
     return []
+  }
+}
+
+export function renderDate(dateString) {
+  try {
+    const date = moment(dateString, "YYYYMMDD")
+    return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
+  } catch (e) {
+    return "Unable to render date"
+  }
+}
+
+export function renderFloat(floatSting, precision = 2) {
+  try {
+    return parseFloat((floatSting || '').replace(',', '.')).toFixed(precision)
+  } catch (e) {
+    return "Unable to render number"
+  }
+}
+
+export function renderCurrency(amount, currency) {
+  try {
+    return renderFloat(amount) + " " + currency
+  } catch (e) {
+    return "Unable to render currency"
   }
 }

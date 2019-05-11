@@ -15,6 +15,7 @@ import Duplicate from "./Duplicate"
 import {isEqual} from "underscore"
 import Generator from "./Generator";
 import {onAccountChange, parse} from './utils'
+import ValidatorWizard from "./ValidatorWizard";
 
 class App extends Component {
   constructor(props) {
@@ -159,6 +160,9 @@ class App extends Component {
             </Tab>
             <Tab eventKey="generator" title="Order generator">
               <Generator/>
+            </Tab>
+            <Tab eventKey="validatorWizard" title="Validator wizard">
+              <ValidatorWizard/>
             </Tab>
           </Tabs>
         </div>

@@ -4,7 +4,7 @@ import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
 import moment from 'moment';
 import 'moment/locale/pl';
-import {getAccountNumberFromFin, findType} from './utils'
+import {getAccountNumberFromFin, findType, renderFloat} from './utils'
 
 import './App.css';
 
@@ -13,7 +13,7 @@ class Validator extends Component {
     return (
       <React.Fragment>
         <Row className="center">
-        <Col md="4" xs={4}><strong>What the order contains</strong></Col>
+        <Col xs={4}><strong>What the order contains</strong></Col>
         <Col xs={4}>
           <Badge className="mr-sm-2" variant='success'>Valid</Badge>
           <Badge variant='danger'>Invalid</Badge>
@@ -78,10 +78,10 @@ class Validator extends Component {
 
     if(!rate || !buy || !sell || !orderRate) { return }
 
-    buy = this.renderFloat(buy.ast['Amount'])
-    sell = this.renderFloat(sell.ast['Amount'])
-    rate = this.renderFloat(rate.ast['Rate'])
-    orderRate = this.renderFloat(orderRate.ast['Rate'])
+    buy = renderFloat(buy.ast['Amount'])
+    sell = renderFloat(sell.ast['Amount'])
+    rate = renderFloat(rate.ast['Rate'])
+    orderRate = renderFloat(orderRate.ast['Rate'])
     const computedRate = (sell / buy).toFixed(2)
 
     return this.renderType('Rate', orderRate, rate + ' (Calculated: ' + computedRate + ')', rate === orderRate)
@@ -151,12 +151,12 @@ class Validator extends Component {
   }
 
   renderAmountValidator(orderValue, transactionValue, label) {
-    const validation = this.renderFloat(orderValue['Amount']) === this.renderFloat(transactionValue['Amount']) && orderValue['Currency Code'] === transactionValue['Currency']
+    const validation = renderFloat(orderValue['Amount']) === renderFloat(transactionValue['Amount']) && orderValue['Currency Code'] === transactionValue['Currency']
     return this.renderType(label, this.renderCurrency(orderValue), this.renderCurrency(transactionValue), validation)
   }
 
   renderCurrency(ast) {
-    return this.renderFloat(ast['Amount']) + " " + (ast['Currency'] || ast['Currency Code'])
+    return renderFloat(ast['Amount']) + " " + (ast['Currency'] || ast['Currency Code'])
   }
 
   renderFloat(floatSting, precision = 2) {

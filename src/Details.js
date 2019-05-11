@@ -4,6 +4,7 @@ import Row from 'react-bootstrap/Row';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import moment from 'moment';
+import {renderDate, renderFloat, renderCurrency, getAccountNumberFromFin} from "./utils"
 import 'moment/locale/pl';
 
 import './App.css';
@@ -45,16 +46,16 @@ class Details extends Component {
         {this.renderAccountsNumber()}
         {this.renderCurrencyField()}
         {this.renderDates()}
-        {this.renderCustomField('83', 'J', 'Fund number', (ast) => { return this.getAccountNumberFromFin(ast) })}
-        {this.renderCustomField('58', 'J', 'Nostro number', (ast) => { return this.getAccountNumberFromFin(ast) })}
+        {this.renderCustomField('83', 'J', 'Fund number', (ast) => { return getAccountNumberFromFin(ast) })}
+        {this.renderCustomField('58', 'J', 'Nostro number', (ast) => { return getAccountNumberFromFin(ast) })}
         {this.renderField("92", "B", (ast) => { return this.renderRate(ast) })}
         {this.renderField("20", undefined, (ast) => { return ast['Value'] })}
         {this.renderField("83", 'J', (ast) => { return this.renderIdentification(ast['Party Identification']) })}
-        {this.renderField("30", 'T', (ast) => { return this.renderDate(ast['Date']) })}
-        {this.renderField("30", 'V', (ast) => { return this.renderDate(ast['Date']) })}
-        {this.renderField("36", undefined, (ast) => { return this.renderFloat(ast['Rate']) })}
-        {this.renderField("32", 'B', (ast) => { return this.renderCurrency(ast['Amount'], ast['Currency']) })}
-        {this.renderField("33", 'B', (ast) => { return this.renderCurrency(ast['Amount'], ast['Currency']) })}
+        {this.renderField("30", 'T', (ast) => { return renderDate(ast['Date']) })}
+        {this.renderField("30", 'V', (ast) => { return renderDate(ast['Date']) })}
+        {this.renderField("36", undefined, (ast) => { return renderFloat(ast['Rate']) })}
+        {this.renderField("32", 'B', (ast) => { return renderCurrency(ast['Amount'], ast['Currency']) })}
+        {this.renderField("33", 'B', (ast) => { return renderCurrency(ast['Amount'], ast['Currency']) })}
         {this.renderField("53", 'A', (ast) => { return ast['Identifier Code'] })}
         {this.renderField("58", 'J', (ast) => { return this.renderIdentification(ast['Party Identification'])})}
       </Row>
@@ -62,31 +63,13 @@ class Details extends Component {
   }
 
   renderRate(ast) {
-    return ast['First Currency Code'] + '/' + ast['Second Currency Code'] + ' ' + this.renderFloat(ast['Rate'])
+    return ast['First Currency Code'] + '/' + ast['Second Currency Code'] + ' ' + renderFloat(ast['Rate'])
   }
 
   renderIdentification(name) {
     return name.split('\n').map((item, i) => {
       return <p key={i}>{item}</p>;
     })
-  }
-
-  getAccountNumberFromFin(ast) {
-    const identify = ast['Party Identification']
-    return identify.split('\n').find((line) => { return line.includes('ACCT/') }).split('/')[2]
-  }
-
-  renderDate(dateString) {
-    const date = moment(dateString, "YYYYMMDD")
-    return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
-  }
-
-  renderFloat(floatSting, precision = 2) {
-    return parseFloat((floatSting || '').replace(',', '.')).toFixed(precision)
-  }
-
-  renderCurrency(amount, currency) {
-    return this.renderFloat(amount) + " " + currency
   }
 
   renderCustomField(type, option, name, mapper) {
@@ -109,7 +92,7 @@ class Details extends Component {
     const types = this.findType(TYPES["Currency"])
 
     return types.map((type) => {
-      return this.renderType(type.ast["Qualifier"],  this.renderCurrency(type.ast['Amount'], type.ast['Currency'] || type.ast['Currency Code']))
+      return this.renderType(type.ast["Qualifier"],  renderCurrency(type.ast['Amount'], type.ast['Currency'] || type.ast['Currency Code']))
     })
   }
 
