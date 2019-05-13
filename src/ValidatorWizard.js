@@ -12,6 +12,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {parse, findType, renderCurrency, onAccountChange} from './utils'
 import JSONPretty from 'react-json-pretty'
+import Badge from "react-bootstrap/Badge";
 
 class ValidatorWizard extends Component {
   constructor(props) {
@@ -30,6 +31,8 @@ class ValidatorWizard extends Component {
       currentOrderIndex: 0,
       validOrders: [],
       invalidOrders: [],
+      refDate: '',
+      number: 0
     }
 
     this.onOrdersChange = this.onOrdersChange.bind(this)
@@ -40,6 +43,7 @@ class ValidatorWizard extends Component {
     this.markAsValid = this.markAsValid.bind(this)
     this.markAsInvalid = this.markAsInvalid.bind(this)
     this.onAccountChange = onAccountChange.bind(this)
+    this.onRefChange = this.onRefChange.bind(this)
   }
 
   render() {
@@ -58,6 +62,7 @@ class ValidatorWizard extends Component {
             <Form>
               <Form.Group>
                 <Form.Control className="m-1" placeholder="Orders" as="textarea" rows="10" onChange={this.onOrdersChange}/>
+                <Form.Control className="m-1" placeholder="First Reference" as="input" onChange={this.onRefChange}/>
                 <Form.Control className="m-1" placeholder="Accounts" as="textarea" rows="10" onChange={this.onAccountChange}/>
               </Form.Group>
             </Form>
@@ -92,6 +97,9 @@ class ValidatorWizard extends Component {
         return (
           <ListGroup.Item as="li" key={index} variant={variant} active={active} action onClick={this.onOrderClick(index)}>
             <Row>
+              <Col>
+                <Badge pill variant="light"> {this.state.refDate}<strong>{this.state.number + index + 1}</strong> </Badge>
+              </Col>
               <Col>
                 {renderCurrency(sell['Amount'], sell['Currency Code'])} / {renderCurrency(buy['Amount'], buy['Currency Code'])}
               </Col>
@@ -230,6 +238,17 @@ class ValidatorWizard extends Component {
       const validOrders = this.state.validOrders.filter((order) => { return order !== orderIndex})
       invalidOrders.push(orderIndex)
       return this.setState({ invalidOrders: invalidOrders, validOrders: validOrders })
+    })
+  }
+
+  onRefChange(event) {
+    const value = event.target.value
+    const refDate = value.slice(0, 10)
+    const number = parseFloat(value.slice(10))
+
+    this.setState({
+      refDate: refDate,
+      number: number
     })
   }
 }
