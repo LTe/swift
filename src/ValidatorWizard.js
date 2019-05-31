@@ -117,7 +117,7 @@ class ValidatorWizard extends Component {
          <ListGroup.Item as="li" key={index} variant="dark" action onClick={this.onOrderClick(index)}>
            <Row>
              <Col>
-               Problem with parse
+               Problem with parse <strong>{e.message}</strong>
              </Col>
            </Row>
          </ListGroup.Item>
