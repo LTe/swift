@@ -7,7 +7,7 @@ import './App.css';
 import ListGroup from "react-bootstrap/ListGroup";
 import Details from './Details'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { darcula, solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { darcula, solarizedlight, duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {parse, findType, renderCurrency, onAccountChange} from './utils'
@@ -139,7 +139,7 @@ class ValidatorWizard extends Component {
             </ListGroup>
           </Col>
         </Col>
-        <Col className="mr-1">
+        <Col xs={7} className="mr-1">
           <Row>
             <Col>
               <Form>
@@ -173,6 +173,11 @@ class ValidatorWizard extends Component {
             </Col>
             <Col>
               <SyntaxHighlighter language='javascript' style={darcula}>{this.state.transactionRaw}</SyntaxHighlighter>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <SyntaxHighlighter language='javascript' style={duotoneDark}>{this.state.currentOrder}</SyntaxHighlighter>
             </Col>
           </Row>
         </Col>
