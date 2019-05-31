@@ -177,7 +177,7 @@ class ValidatorWizard extends Component {
           </Row>
           <Row>
             <Col>
-              <SyntaxHighlighter language='javascript' style={duotoneDark}>{this.state.currentOrder}</SyntaxHighlighter>
+              <SyntaxHighlighter language='javascript' style={duotoneDark}>{this.state.currentOrder.toString()}</SyntaxHighlighter>
             </Col>
           </Row>
         </Col>
