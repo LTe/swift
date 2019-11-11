@@ -17,8 +17,10 @@ import Generator from "./Generator";
 import {onAccountChange, parse} from './utils'
 import ValidatorWizard from "./ValidatorWizard";
 
-class App extends Component {
-  constructor(props) {
+class App extends Component<any, any> {
+  private readonly onAccountChange: any;
+
+  constructor(props: any) {
     super(props);
     this.state = {
       orderJSON: {},
@@ -35,14 +37,14 @@ class App extends Component {
     this.duplicateCheck = this.duplicateCheck.bind(this);
   }
 
-  duplicateCheck(event) {
+  duplicateCheck(event: any) {
     const swifts = event.target.value.split(/\n{2,}/)
-    const mappedSwifts = swifts.map((swift) => {
+    const mappedSwifts = swifts.map((swift: any) => {
       return parse(swift)
     })
-    const duplicatedOrders = mappedSwifts.filter((order) => {
+    const duplicatedOrders = mappedSwifts.filter((order: any) => {
       return mappedSwifts.filter(
-      (swift) => {
+      (swift: any) => {
         return isEqual(swift, order)
       }).length > 1
     })
@@ -57,12 +59,12 @@ class App extends Component {
     )
   }
 
-  onOrderChange(event) {
+  onOrderChange(event: any) {
     const value = event.target.value
     this.setState({orderJSON: parse(value)})
   }
 
-  onTransactionChange(event) {
+  onTransactionChange(event: any) {
     const value = event.target.value
     this.setState({transactionJSON: parse(value)})
   }

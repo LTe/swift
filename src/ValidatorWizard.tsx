@@ -14,8 +14,16 @@ import {parse, findType, renderCurrency, onAccountChange} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 
-class ValidatorWizard extends Component {
-  constructor(props) {
+class ValidatorWizard extends Component<any, any> {
+  private readonly onAccountChange: OmitThisParameter<(this: React.Component, event: any) => void>;
+
+  static defaultProps = {
+    orderJSON: {},
+    transactionJSON: {},
+    accounts: []
+  }
+
+  constructor(props: any) {
     super(props)
     this.state = {
       orders: [],
@@ -81,17 +89,19 @@ class ValidatorWizard extends Component {
   }
 
   renderList() {
-    return this.state.orders.map((order, index) => {
+    return this.state.orders.map((order: any, index: any) => {
       try {
         const buy = findType(order, "19", "B", "NETT")[0].ast
         const sell = findType(order, "19", "B", "PSTA")[0].ast
         const active = index === this.state.currentOrderIndex
-        let variant
+        let variant : "success" | "danger" | undefined
 
         if (this.state.validOrders.includes(index) && !this.state.invalidOrders.includes(index)) {
           variant = "success"
         } else if (this.state.invalidOrders.includes(index)) {
           variant = "danger"
+        } else {
+          variant = undefined
         }
 
         return (
@@ -185,7 +195,7 @@ class ValidatorWizard extends Component {
     )
   }
 
-  onTransactionChange(event) {
+  onTransactionChange(event: any) {
     const value = event.target.value
     const transactions = this.state.transactions
     transactions[this.state.currentOrderIndex] = value
@@ -193,7 +203,7 @@ class ValidatorWizard extends Component {
     this.setState({transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
   }
 
-  onOrdersChange(event) {
+  onOrdersChange(event : any) {
     const value = event.target.value
     this.setState({orderRaw: value})
   }
@@ -216,7 +226,7 @@ class ValidatorWizard extends Component {
     this.setState({orders: []})
   }
 
-  onOrderClick(orderIndex) {
+  onOrderClick(orderIndex: any) {
     return (() => {
       return this.setState({
         currentOrderRaw: this.state.ordersRaw[orderIndex],
@@ -228,25 +238,25 @@ class ValidatorWizard extends Component {
     })
   }
 
-  markAsValid(orderIndex) {
+  markAsValid(orderIndex: any) {
     return (() => {
       const validOrders = this.state.validOrders
-      const invalidOrders = this.state.invalidOrders.filter((order) => { return order !== orderIndex})
+      const invalidOrders = this.state.invalidOrders.filter((order: any) => { return order !== orderIndex})
       validOrders.push(orderIndex)
       return this.setState({ validOrders: validOrders, invalidOrders: invalidOrders })
     })
   }
 
-  markAsInvalid(orderIndex) {
+  markAsInvalid(orderIndex: any) {
     return (() => {
       const invalidOrders = this.state.invalidOrders
-      const validOrders = this.state.validOrders.filter((order) => { return order !== orderIndex})
+      const validOrders = this.state.validOrders.filter((order: any) => { return order !== orderIndex})
       invalidOrders.push(orderIndex)
       return this.setState({ invalidOrders: invalidOrders, validOrders: validOrders })
     })
   }
 
-  onRefChange(event) {
+  onRefChange(event: any) {
     const value = event.target.value
     const refDate = value.slice(0, 10)
     const number = parseFloat(value.slice(10))
@@ -256,12 +266,6 @@ class ValidatorWizard extends Component {
       number: number
     })
   }
-}
-
-ValidatorWizard.defaultProps = {
-  orderJSON: {},
-  transactionJSON: {},
-  accounts: []
 }
 
 export default ValidatorWizard;
