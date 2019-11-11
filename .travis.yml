@@ -1,1 +1,6 @@
 language: node_js
+deploy:
+  - provider: script
+    script: yarn deploy
+    on:
+      branch: master
