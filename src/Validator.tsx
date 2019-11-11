@@ -8,7 +8,7 @@ import {getAccountNumberFromFin, findType, renderFloat} from './utils'
 
 import './App.css';
 
-class Validator extends Component {
+class Validator extends Component<any, any> {
   render() {
     return (
       <React.Fragment>
@@ -43,7 +43,7 @@ class Validator extends Component {
     let fundAccountNumber = getAccountNumberFromFin(fundAccount.ast)
     let orderAccountNumber = orderAccount.ast['Account Number']
 
-    let matchingAccount = this.props.accounts.find((mapping) => {
+    let matchingAccount = this.props.accounts.find((mapping: any) => {
       return orderAccountNumber.includes(mapping.account)
     }) || {fund: 'Unknow number'}
 
@@ -61,7 +61,7 @@ class Validator extends Component {
     let nostroAccountNumber = getAccountNumberFromFin(nostroAccount.ast)
     let orderAccountNumber = orderAccount.ast['Account Number']
 
-    let matchingAccount = this.props.accounts.find((mapping) => {
+    let matchingAccount = this.props.accounts.find((mapping: any) => {
       return orderAccountNumber.includes(mapping.account)
     }) || {nostro: 'Unknow number'}
 
@@ -150,24 +150,24 @@ class Validator extends Component {
     return this.renderAmountValidator(orderValue, transactionValue, 'Sell Currency Amount')
   }
 
-  renderAmountValidator(orderValue, transactionValue, label) {
+  renderAmountValidator(orderValue: any, transactionValue: any, label: any) {
     const validation = renderFloat(orderValue['Amount']) === renderFloat(transactionValue['Amount']) && orderValue['Currency Code'] === transactionValue['Currency']
     return this.renderType(label, this.renderCurrency(orderValue), this.renderCurrency(transactionValue), validation)
   }
 
-  renderCurrency(ast) {
+  renderCurrency(ast: any) {
     return renderFloat(ast['Amount']) + " " + (ast['Currency'] || ast['Currency Code'])
   }
 
-  renderFloat(floatSting, precision = 2) {
+  renderFloat(floatSting: any, precision = 2) {
     return parseFloat(floatSting.replace(',', '.')).toFixed(precision)
   }
 
-  renderDate(date) {
+  renderDate(date: any) {
     return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
   }
 
-  renderType(label, valueLeft, valueRight, valid) {
+  renderType(label: any, valueLeft: any, valueRight: any, valid: any) {
     const badgeVariant = valid ? 'success' : 'danger'
 
     return (

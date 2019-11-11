@@ -11,8 +11,10 @@ import JSONPretty from 'react-json-pretty'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { darcula, solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-class Generator extends Component {
-  constructor(props) {
+class Generator extends Component<any, any> {
+  private readonly onAccountChange: any;
+
+  constructor(props: any) {
     super(props)
 
     this.state = {
@@ -34,25 +36,25 @@ class Generator extends Component {
     this.setState({transactions: this.state.orders.map(this.generateTransaction)})
   }
 
-  onOrderChange (event) {
+  onOrderChange (event: any) {
     const orders = event.target.value.replace(/ :/g, "\n:").split(/\n{2,}/)
     this.setState({orders: orders.map(parse), rawOrders: orders})
   }
 
 
-  onTemplateChange (event) {
+  onTemplateChange (event: any) {
     const templates =  event.target.value.split(/\n{2,}/)
     this.setState({templates: templates.map(parse), rawTemplates: templates})
   }
 
-  generateTransaction(swift) {
+  generateTransaction(swift: any) {
     try {
       const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number']
-      const matchingAccount = this.state.accounts.find((mapping) => { return accountNumber.includes(mapping.account) })
+      const matchingAccount = this.state.accounts.find((mapping: any) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
-      const matchingTemplateIndex = this.state.templates.findIndex((template, index) => {
+      const matchingTemplateIndex = this.state.templates.findIndex((template: any, index: any) => {
         const fundAccount = findType(template, '83', 'J')[0]
         const nostoAccount = findType(template, '58', 'J')[0]
         if (!fundAccount && !nostoAccount) { return false }
@@ -92,7 +94,7 @@ class Generator extends Component {
     }
   }
 
-  generateTradeDate(date) {
+  generateTradeDate(date: any) {
     const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
 
     if (!moment().isAfter(orderValueDate)) {
@@ -105,7 +107,7 @@ class Generator extends Component {
   renderGeneratedTransactions() {
     const generateTransactions = this.state.orders.map(this.generateTransaction)
 
-    return this.state.rawOrders.map((order, index) => {
+    return this.state.rawOrders.map((order: any, index: any) => {
       return (
         <Row>
           <Col>

@@ -6,7 +6,7 @@ import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
-class Duplicate extends Component {
+class Duplicate extends Component<any, any> {
   render() {
     const badge = this.props.isDuplicate ? (<Badge pill variant="danger"> Is duplicate </Badge>) : (
       <Badge pill variant="success"> Is not duplicate </Badge>)
@@ -36,7 +36,7 @@ class Duplicate extends Component {
   }
 
   renderDetails() {
-    const mappeddValues = this.props.mappedSwifts.map((value, id) => {
+    const mappeddValues = this.props.mappedSwifts.map((value: any, id: any) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
@@ -52,8 +52,6 @@ class Duplicate extends Component {
       }
     })
 
-    console.log(mappeddValues)
-
     return (
       <BootstrapTable data={mappeddValues} striped hover>
         <TableHeaderColumn isKey dataField='valueDate' dataSort={ true }>Value Date</TableHeaderColumn>
@@ -64,7 +62,7 @@ class Duplicate extends Component {
   }
 
   renderDuplicateDetails() {
-    const renderedValues = this.props.duplicateValues.map((value) => {
+    const renderedValues = this.props.duplicateValues.map((value: any) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
@@ -84,7 +82,7 @@ class Duplicate extends Component {
     return renderedValues
   }
 
-  renderRow(valueDate, exoticCurr, usdCurr) {
+  renderRow(valueDate: any, exoticCurr: any, usdCurr: any) {
     return (
       <tr>
         <td>{valueDate.ast.Date}</td>
@@ -94,10 +92,10 @@ class Duplicate extends Component {
     )
   }
 
-  findType(json, type, option, qualifier) {
+  findType(json: any, type: any, option: any, qualifier: any) {
     const details = json['block4']
     if (details) {
-      return details.filter((element) => {
+      return details.filter((element: any) => {
         return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
       }) || []
     } else {

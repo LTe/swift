@@ -4,6 +4,13 @@
   "private": true,
   "homepage": ".",
   "dependencies": {
+    "@types/jest": "^24.0.22",
+    "@types/node": "^12.12.7",
+    "@types/react": "^16.9.11",
+    "@types/react-bootstrap-table": "^4.3.7",
+    "@types/react-dom": "^16.9.4",
+    "@types/react-syntax-highlighter": "^11.0.1",
+    "@types/underscore": "^1.9.3",
     "bootstrap": "^4.3.1",
     "gh-pages": "^2.0.1",
     "inliner": "^1.13.1",
@@ -13,9 +20,10 @@
     "react-bootstrap-table": "^4.3.1",
     "react-dom": "^16.8.6",
     "react-json-pretty": "^2.1.0",
-    "react-scripts": "2.1.8",
-    "react-syntax-highlighter": "^10.2.1",
-    "swift-mock": "LTe/swift-mock#support-for-empty-fields-browsers-and-missing-fields",
+    "react-scripts": "3.2.0",
+    "react-syntax-highlighter": "^11.0.2",
+    "swift-mock": "^0.0.26",
+    "typescript": "^3.7.2",
     "underscore": "^1.9.1"
   },
   "scripts": {
@@ -23,7 +31,7 @@
     "deploy": "gh-pages -d build",
     "start": "REACT_APP_GIT_SHA=`git rev-parse --short HEAD` react-scripts start",
     "build": "REACT_APP_GIT_SHA=`git rev-parse --short HEAD` react-scripts build && inliner build/index.html > build/static.html",
-    "test": "react-scripts test",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!(react-syntax-highlighter)/)\"",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -34,5 +42,8 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "fsevents": "2.1.2"
+  }
 }

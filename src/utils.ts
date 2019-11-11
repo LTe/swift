@@ -1,4 +1,5 @@
 import patterns from "./metadata/patterns.json"
+import {Component} from 'react';
 import SwiftParser from 'swift-mock/lib/swiftParser'
 import moment from 'moment'
 import 'moment/locale/pl'
@@ -9,10 +10,10 @@ const FALLBACK_FORMAT = "F01TESTBIC12XXX0360105154\n" +
 
 const parser = new SwiftParser(JSON.stringify(patterns))
 
-export function onAccountChange(event) {
+export function onAccountChange(this: Component, event: any) {
   const value = event.target.value
   const lines = value.split('\n')
-  const accounts = lines.map((line) => {
+  const accounts = lines.map((line: any) => {
     const accountDetails = line.split(',')
     const fundAccount = (accountDetails[1] || '').slice(0, -5) + '5-000'
     return {account: accountDetails[0], fund: fundAccount, nostro: accountDetails[2]}
@@ -21,7 +22,7 @@ export function onAccountChange(event) {
   this.setState({accounts: accounts})
 }
 
-export function tryParse(value) {
+export function tryParse(value: any) {
   value = value.replace(/\n{2,}/g, '\n')
   value = value.replace(/ :/g, '\n:')
 
@@ -34,7 +35,7 @@ export function tryParse(value) {
   return parser.parse(block_1 + block_2 + block_3 + block_4)
 }
 
-export function parse(value) {
+export function parse(value: any) {
   try {
     return parser.parse(value)
   } catch (e) {
@@ -54,16 +55,16 @@ export function parse(value) {
   }
 }
 
-export function getAccountNumberFromFin(ast) {
+export function getAccountNumberFromFin(ast: any) {
   const identify = ast['Party Identification']
-  return identify.split('\n').find((line) => { return line.includes('ACCT/') }).split('/')[2]
+  return identify.split('\n').find((line: any) => { return line.includes('ACCT/') }).split('/')[2]
 }
 
-export function findType(json, type, option, qualifier) {
+export function findType(json: any, type: any, option?: any, qualifier?: any) {
   try {
     const details = json['block4']
     if(details) {
-      return details.filter((element)=> {
+      return details.filter((element: any)=> {
         return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
       }) || []
     } else {
@@ -74,7 +75,7 @@ export function findType(json, type, option, qualifier) {
   }
 }
 
-export function renderDate(dateString) {
+export function renderDate(dateString: any) {
   try {
     const date = moment(dateString, "YYYYMMDD")
     return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
@@ -83,7 +84,7 @@ export function renderDate(dateString) {
   }
 }
 
-export function renderFloat(floatSting, precision = 2) {
+export function renderFloat(floatSting: any, precision = 2) {
   try {
     return parseFloat((floatSting || '').replace(',', '.')).toFixed(precision)
   } catch (e) {
@@ -91,7 +92,7 @@ export function renderFloat(floatSting, precision = 2) {
   }
 }
 
-export function renderCurrency(amount, currency) {
+export function renderCurrency(amount: any, currency: any) {
   try {
     return renderFloat(amount) + " " + currency
   } catch (e) {
