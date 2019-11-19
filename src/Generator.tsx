@@ -4,12 +4,13 @@ import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {onAccountChange, parse, findType, getAccountNumberFromFin} from './utils'
+import {ParsedSwift, onAccountChange, parse, findType, getAccountNumberFromFin, AccountDetails, Block4} from './utils'
 import moment from 'moment';
 import 'moment/locale/pl';
 import JSONPretty from 'react-json-pretty'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { darcula, solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {FormControlProps} from "react-bootstrap";
 
 class Generator extends Component<any, any> {
   private readonly onAccountChange: any;
@@ -32,29 +33,28 @@ class Generator extends Component<any, any> {
     this.generateTransaction = this.generateTransaction.bind(this)
   }
 
-  tryGenerateTransactions() {
+  tryGenerateTransactions() : void {
     this.setState({transactions: this.state.orders.map(this.generateTransaction)})
   }
 
-  onOrderChange (event: any) {
-    const orders = event.target.value.replace(/ :/g, "\n:").split(/\n{2,}/)
+  onOrderChange (event: React.ChangeEvent<FormControlProps>) : void {
+    const orders = (event.target.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
     this.setState({orders: orders.map(parse), rawOrders: orders})
   }
 
-
-  onTemplateChange (event: any) {
-    const templates =  event.target.value.split(/\n{2,}/)
+  onTemplateChange (event: React.ChangeEvent<FormControlProps>) : void {
+    const templates =  (event.target.value || '').split(/\n{2,}/)
     this.setState({templates: templates.map(parse), rawTemplates: templates})
   }
 
-  generateTransaction(swift: any) {
+  generateTransaction(swift: ParsedSwift) {
     try {
-      const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number']
-      const matchingAccount = this.state.accounts.find((mapping: any) => { return accountNumber.includes(mapping.account) })
+      const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
+      const matchingAccount: AccountDetails = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
-      const matchingTemplateIndex = this.state.templates.findIndex((template: any, index: any) => {
+      const matchingTemplateIndex = this.state.templates.findIndex((template: ParsedSwift, index: any) => {
         const fundAccount = findType(template, '83', 'J')[0]
         const nostoAccount = findType(template, '58', 'J')[0]
         if (!fundAccount && !nostoAccount) { return false }
@@ -94,17 +94,17 @@ class Generator extends Component<any, any> {
     }
   }
 
-  generateTradeDate(date: any) {
+  generateTradeDate(date: Block4) : Block4 {
     const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
 
     if (!moment().isAfter(orderValueDate)) {
-      return {'ast': {'Date': moment().format('YYYYMMDD')} }
-    } else {
-      return date
+      date.ast.Date = moment().format('YYYYMMDD')
     }
+
+    return date
   }
 
-  renderGeneratedTransactions() {
+  renderGeneratedTransactions() : JSX.Element[] {
     const generateTransactions = this.state.orders.map(this.generateTransaction)
 
     return this.state.rawOrders.map((order: any, index: any) => {

@@ -4,7 +4,14 @@ import Badge from "react-bootstrap/Badge";
 import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import {BootstrapTable, BootstrapTableProps, TableHeaderColumn} from 'react-bootstrap-table';
+import {Block4, ParsedSwift} from "./utils";
+
+interface TransactionDetails extends Readonly<BootstrapTableProps> {
+  valueDate: string
+  exoticCurr: string
+  usdCurr: string
+}
 
 class Duplicate extends Component<any, any> {
   render() {
@@ -35,8 +42,8 @@ class Duplicate extends Component<any, any> {
     )
   }
 
-  renderDetails() {
-    const mappeddValues = this.props.mappedSwifts.map((value: any, id: any) => {
+  renderDetails() : JSX.Element {
+    const mappedValues : TransactionDetails[] = this.props.mappedSwifts.map((value: ParsedSwift, id: string) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
@@ -46,14 +53,14 @@ class Duplicate extends Component<any, any> {
           valueDate: valueDate.ast.Date,
           exoticCurr: exoticCurr.ast.Amount + ' ' + exoticCurr.ast["Currency Code"],
           usdCurr: usdCurr.ast.Amount + ' ' + usdCurr.ast["Currency Code"]
-        }
+        } as TransactionDetails
       } catch (e) {
-        return { valueDate: 'Unable to display', exoticCurr: 'Unable to display', usdCurr: 'Unable to display' }
+        return { valueDate: 'Unable to display', exoticCurr: 'Unable to display', usdCurr: 'Unable to display' } as TransactionDetails
       }
     })
 
     return (
-      <BootstrapTable data={mappeddValues} striped hover>
+      <BootstrapTable data={mappedValues} striped hover>
         <TableHeaderColumn isKey dataField='valueDate' dataSort={ true }>Value Date</TableHeaderColumn>
         <TableHeaderColumn dataField='exoticCurr' dataSort={ true }>Exotic Currency</TableHeaderColumn>
         <TableHeaderColumn dataField='usdCurr' dataSort={ true }>USD Currency</TableHeaderColumn>
@@ -61,8 +68,8 @@ class Duplicate extends Component<any, any> {
     )
   }
 
-  renderDuplicateDetails() {
-    const renderedValues = this.props.duplicateValues.map((value: any) => {
+  renderDuplicateDetails() : JSX.Element[] {
+    return this.props.duplicateValues.map((value: any) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
@@ -79,10 +86,9 @@ class Duplicate extends Component<any, any> {
         )
       }
     })
-    return renderedValues
   }
 
-  renderRow(valueDate: any, exoticCurr: any, usdCurr: any) {
+  renderRow(valueDate: Block4, exoticCurr: Block4, usdCurr: Block4) : JSX.Element {
     return (
       <tr>
         <td>{valueDate.ast.Date}</td>
@@ -92,10 +98,10 @@ class Duplicate extends Component<any, any> {
     )
   }
 
-  findType(json: any, type: any, option: any, qualifier: any) {
-    const details = json['block4']
+  findType(json: ParsedSwift, type: string, option: string, qualifier: string): Block4[] {
+    const details : Block4[] = json['block4']
     if (details) {
-      return details.filter((element: any) => {
+      return details.filter((element: Block4) => {
         return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
       }) || []
     } else {

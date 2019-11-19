@@ -14,8 +14,9 @@ import Tabs from 'react-bootstrap/Tabs'
 import Duplicate from "./Duplicate"
 import {isEqual} from "underscore"
 import Generator from "./Generator";
-import {onAccountChange, parse} from './utils'
+import {onAccountChange, parse, ParsedSwift} from './utils'
 import ValidatorWizard from "./ValidatorWizard";
+import {FormControlProps} from "react-bootstrap";
 
 class App extends Component<any, any> {
   private readonly onAccountChange: any;
@@ -37,14 +38,14 @@ class App extends Component<any, any> {
     this.duplicateCheck = this.duplicateCheck.bind(this);
   }
 
-  duplicateCheck(event: any) {
-    const swifts = event.target.value.split(/\n{2,}/)
-    const mappedSwifts = swifts.map((swift: any) => {
+  duplicateCheck(event: React.ChangeEvent<FormControlProps>) {
+    const swifts = (event.target.value || '').split(/\n{2,}/)
+    const mappedSwifts = swifts.map((swift: string) => {
       return parse(swift)
     })
-    const duplicatedOrders = mappedSwifts.filter((order: any) => {
+    const duplicatedOrders = mappedSwifts.filter((order: ParsedSwift) => {
       return mappedSwifts.filter(
-      (swift: any) => {
+      (swift: ParsedSwift) => {
         return isEqual(swift, order)
       }).length > 1
     })
@@ -59,13 +60,13 @@ class App extends Component<any, any> {
     )
   }
 
-  onOrderChange(event: any) {
-    const value = event.target.value
+  onOrderChange(event: React.ChangeEvent<FormControlProps>) {
+    const value = event.target.value || ''
     this.setState({orderJSON: parse(value)})
   }
 
-  onTransactionChange(event: any) {
-    const value = event.target.value
+  onTransactionChange(event: React.ChangeEvent<FormControlProps>) {
+    const value = event.target.value || ''
     this.setState({transactionJSON: parse(value)})
   }
 

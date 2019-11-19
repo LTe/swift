@@ -13,6 +13,7 @@ import Button from "react-bootstrap/Button";
 import {parse, findType, renderCurrency, onAccountChange} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
+import {FormControlProps} from "react-bootstrap";
 
 class ValidatorWizard extends Component<any, any> {
   private readonly onAccountChange: OmitThisParameter<(this: React.Component, event: any) => void>;
@@ -62,7 +63,7 @@ class ValidatorWizard extends Component<any, any> {
     }
   }
 
-  renderInputPage() {
+  renderInputPage() : JSX.Element {
     return (
       <Col className="m-1">
         <Row>
@@ -88,7 +89,7 @@ class ValidatorWizard extends Component<any, any> {
     )
   }
 
-  renderList() {
+  renderList() : JSX.Element {
     return this.state.orders.map((order: any, index: any) => {
       try {
         const buy = findType(order, "19", "B", "NETT")[0].ast
@@ -136,7 +137,7 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  renderWizard() {
+  renderWizard() : JSX.Element {
     return (
       <Row className="mt-1 ml-1 mr-1" >
         <Col xs={4}>
@@ -195,15 +196,15 @@ class ValidatorWizard extends Component<any, any> {
     )
   }
 
-  onTransactionChange(event: any) {
-    const value = event.target.value
+  onTransactionChange(event: React.ChangeEvent<FormControlProps>) {
+    const value = event.target.value || ''
     const transactions = this.state.transactions
     transactions[this.state.currentOrderIndex] = value
 
     this.setState({transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
   }
 
-  onOrdersChange(event : any) {
+  onOrdersChange(event : React.ChangeEvent<FormControlProps>) {
     const value = event.target.value
     this.setState({orderRaw: value})
   }
@@ -226,7 +227,7 @@ class ValidatorWizard extends Component<any, any> {
     this.setState({orders: []})
   }
 
-  onOrderClick(orderIndex: any) {
+  onOrderClick(orderIndex: number) {
     return (() => {
       return this.setState({
         currentOrderRaw: this.state.ordersRaw[orderIndex],
@@ -238,7 +239,7 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  markAsValid(orderIndex: any) {
+  markAsValid(orderIndex: number) {
     return (() => {
       const validOrders = this.state.validOrders
       const invalidOrders = this.state.invalidOrders.filter((order: any) => { return order !== orderIndex})
@@ -247,7 +248,7 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  markAsInvalid(orderIndex: any) {
+  markAsInvalid(orderIndex: number) {
     return (() => {
       const invalidOrders = this.state.invalidOrders
       const validOrders = this.state.validOrders.filter((order: any) => { return order !== orderIndex})
@@ -256,8 +257,8 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  onRefChange(event: any) {
-    const value = event.target.value
+  onRefChange(event: React.ChangeEvent<FormControlProps>) {
+    const value = event.target.value || ''
     const refDate = value.slice(0, 10)
     const number = parseFloat(value.slice(10))
 
