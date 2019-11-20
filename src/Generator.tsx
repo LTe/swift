@@ -1,17 +1,27 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {onAccountChange, parse, findType, getAccountNumberFromFin} from './utils'
+import {AccountDetails, Block4, findType, getAccountNumberFromFin, onAccountChange, parse, ParsedSwift} from './utils'
 import moment from 'moment';
-import 'moment/locale/pl';
 import JSONPretty from 'react-json-pretty'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { darcula, solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {darcula, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-class Generator extends Component<any, any> {
+interface GeneratorProps {}
+
+interface GeneratorState {
+  accounts: AccountDetails[]
+  templates: ParsedSwift[]
+  orders: ParsedSwift[]
+  transactions: string[]
+  rawTemplates: string[]
+  rawOrders: string[]
+}
+
+class Generator extends Component<GeneratorProps, GeneratorState> {
   private readonly onAccountChange: any;
 
   constructor(props: any) {
@@ -26,35 +36,26 @@ class Generator extends Component<any, any> {
       rawOrders: []
     }
 
-    this.onOrderChange = this.onOrderChange.bind(this)
-    this.onTemplateChange = this.onTemplateChange.bind(this)
     this.onAccountChange = onAccountChange.bind(this)
-    this.generateTransaction = this.generateTransaction.bind(this)
   }
-
-  tryGenerateTransactions() {
-    this.setState({transactions: this.state.orders.map(this.generateTransaction)})
-  }
-
-  onOrderChange (event: any) {
-    const orders = event.target.value.replace(/ :/g, "\n:").split(/\n{2,}/)
+  onOrderChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const orders = (event.currentTarget.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
     this.setState({orders: orders.map(parse), rawOrders: orders})
   }
 
-
-  onTemplateChange (event: any) {
-    const templates =  event.target.value.split(/\n{2,}/)
+  onTemplateChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const templates =  (event.currentTarget.value || '').split(/\n{2,}/)
     this.setState({templates: templates.map(parse), rawTemplates: templates})
   }
 
-  generateTransaction(swift: any) {
+  generateTransaction = (swift: ParsedSwift) => {
     try {
-      const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number']
-      const matchingAccount = this.state.accounts.find((mapping: any) => { return accountNumber.includes(mapping.account) })
+      const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
+      const matchingAccount = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
-      const matchingTemplateIndex = this.state.templates.findIndex((template: any, index: any) => {
+      const matchingTemplateIndex = this.state.templates.findIndex((template: ParsedSwift) => {
         const fundAccount = findType(template, '83', 'J')[0]
         const nostoAccount = findType(template, '58', 'J')[0]
         if (!fundAccount && !nostoAccount) { return false }
@@ -62,11 +63,7 @@ class Generator extends Component<any, any> {
         const fundAccountNumber = getAccountNumberFromFin(fundAccount.ast)
         const nostoAccountNumber = getAccountNumberFromFin(nostoAccount.ast)
 
-        if (fundAccountNumber === matchingAccount.fund && nostoAccountNumber === matchingAccount.nostro) {
-          return true
-        } else {
-          return false
-        }
+        return !!(fundAccountNumber === matchingAccount.fund && nostoAccountNumber === matchingAccount.nostro);
       })
 
       const matchingTemplate = this.state.templates[matchingTemplateIndex]
@@ -94,17 +91,17 @@ class Generator extends Component<any, any> {
     }
   }
 
-  generateTradeDate(date: any) {
+  generateTradeDate(date: Block4) : Block4 {
     const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
 
     if (!moment().isAfter(orderValueDate)) {
-      return {'ast': {'Date': moment().format('YYYYMMDD')} }
-    } else {
-      return date
+      date.ast.Date = moment().format('YYYYMMDD')
     }
+
+    return date
   }
 
-  renderGeneratedTransactions() {
+  renderGeneratedTransactions() : JSX.Element[] {
     const generateTransactions = this.state.orders.map(this.generateTransaction)
 
     return this.state.rawOrders.map((order: any, index: any) => {

@@ -7,44 +7,52 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import JSONPretty from 'react-json-pretty'
 import Details from './Details'
-import './App.css'
+import './assets/css/App.css'
 import Validator from "./Validator"
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import Duplicate from "./Duplicate"
 import {isEqual} from "underscore"
 import Generator from "./Generator";
-import {onAccountChange, parse} from './utils'
-import ValidatorWizard from "./ValidatorWizard";
+import {AccountDetails, onAccountChange, parse, ParsedSwift} from './utils'
+import ValidatorWizard from "./ValidatorWizard"
 
-class App extends Component<any, any> {
+interface AppState {
+    orderJSON: ParsedSwift
+    transactionJSON: ParsedSwift
+    accounts: AccountDetails[]
+    isDuplicate: boolean
+    duplicateValues: ParsedSwift[]
+    mappedSwifts: ParsedSwift[]
+}
+
+interface AppProps {}
+
+class App extends Component<AppProps, AppState> {
   private readonly onAccountChange: any;
 
-  constructor(props: any) {
+  constructor(props: AppProps) {
     super(props);
     this.state = {
-      orderJSON: {},
-      transactionJSON: {},
+      orderJSON: {} as ParsedSwift,
+      transactionJSON: {} as ParsedSwift,
       accounts: [],
       isDuplicate: false,
       duplicateValues: [],
       mappedSwifts: []
     }
 
-    this.onOrderChange = this.onOrderChange.bind(this);
-    this.onTransactionChange = this.onTransactionChange.bind(this);
     this.onAccountChange = onAccountChange.bind(this);
-    this.duplicateCheck = this.duplicateCheck.bind(this);
   }
 
-  duplicateCheck(event: any) {
-    const swifts = event.target.value.split(/\n{2,}/)
-    const mappedSwifts = swifts.map((swift: any) => {
+  duplicateCheck = (event: React.FormEvent<HTMLInputElement>) => {
+    const swifts = (event.currentTarget.value || '').split(/\n{2,}/)
+    const mappedSwifts = swifts.map((swift: string) => {
       return parse(swift)
     })
-    const duplicatedOrders = mappedSwifts.filter((order: any) => {
+    const duplicatedOrders = mappedSwifts.filter((order: ParsedSwift) => {
       return mappedSwifts.filter(
-      (swift: any) => {
+      (swift: ParsedSwift) => {
         return isEqual(swift, order)
       }).length > 1
     })
@@ -59,13 +67,13 @@ class App extends Component<any, any> {
     )
   }
 
-  onOrderChange(event: any) {
-    const value = event.target.value
+  onOrderChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const value = event.currentTarget.value || ''
     this.setState({orderJSON: parse(value)})
   }
 
-  onTransactionChange(event: any) {
-    const value = event.target.value
+  onTransactionChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const value = event.currentTarget.value || ''
     this.setState({transactionJSON: parse(value)})
   }
 
@@ -114,10 +122,10 @@ class App extends Component<any, any> {
                 <hr className="col-xs-12"/>
                 <Row>
                   <Col xs={6}>
-                    <Details parsedSwift={this.state.orderJSON}></Details>
+                    <Details parsedSwift={this.state.orderJSON}/>
                   </Col>
                   <Col xs={6}>
-                    <Details parsedSwift={this.state.transactionJSON}></Details>
+                    <Details parsedSwift={this.state.transactionJSON}/>
                   </Col>
                 </Row>
                 <Row>

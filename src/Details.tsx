@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
-import moment from 'moment';
-import {renderDate, renderFloat, renderCurrency, getAccountNumberFromFin} from "./utils"
+import moment, {Moment} from 'moment';
+import {Block4, getAccountNumberFromFin, ParsedSwift, renderCurrency, renderDate, renderFloat, SwiftAST} from "./utils"
 import 'moment/locale/pl';
+import './assets/css/App.css';
 
-import './App.css';
+type TypeMapperReturn = string | JSX.Element | JSX.Element[] | Moment
+type TypeMapper = (ast: SwiftAST) => TypeMapperReturn
 
 const TYPES = {
   "Account number": {type: "97", option: "A"},
@@ -39,81 +41,86 @@ const TOOLTIPS: { [id: string] : string; } = {
   'NETT': "Net Cash Amount"
 }
 
-class Details extends Component<any, any> {
+interface DetailsProps {
+  parsedSwift: ParsedSwift
+}
+interface DetailsState {}
+
+class Details extends Component<DetailsProps, DetailsState> {
   render() {
     return (
       <Row as="dl">
         {this.renderAccountsNumber()}
         {this.renderCurrencyField()}
         {this.renderDates()}
-        {this.renderCustomField('83', 'J', 'Fund number', (ast: any) => { return getAccountNumberFromFin(ast) })}
-        {this.renderCustomField('58', 'J', 'Nostro number', (ast: any) => { return getAccountNumberFromFin(ast) })}
-        {this.renderField("92", "B", (ast: any) => { return this.renderRate(ast) })}
-        {this.renderField("20", undefined, (ast: any) => { return ast['Value'] })}
-        {this.renderField("83", 'J', (ast: any) => { return this.renderIdentification(ast['Party Identification']) })}
-        {this.renderField("30", 'T', (ast: any) => { return renderDate(ast['Date']) })}
-        {this.renderField("30", 'V', (ast: any) => { return renderDate(ast['Date']) })}
-        {this.renderField("36", undefined, (ast: any) => { return renderFloat(ast['Rate']) })}
-        {this.renderField("32", 'B', (ast: any) => { return renderCurrency(ast['Amount'], ast['Currency']) })}
-        {this.renderField("33", 'B', (ast: any) => { return renderCurrency(ast['Amount'], ast['Currency']) })}
-        {this.renderField("53", 'A', (ast: any) => { return ast['Identifier Code'] })}
-        {this.renderField("58", 'J', (ast: any) => { return this.renderIdentification(ast['Party Identification'])})}
+        {this.renderCustomField('83', 'J', 'Fund number', (ast: SwiftAST) => { return getAccountNumberFromFin(ast) })}
+        {this.renderCustomField('58', 'J', 'Nostro number', (ast: SwiftAST) => { return getAccountNumberFromFin(ast) })}
+        {this.renderField("92", "B", (ast: SwiftAST) => { return Details.renderRate(ast) })}
+        {this.renderField("20", undefined, (ast: SwiftAST) => { return ast['Value'] || '' })}
+        {this.renderField("83", 'J', (ast: SwiftAST) => { return Details.renderIdentification(ast['Party Identification']) })}
+        {this.renderField("30", 'T', (ast: SwiftAST) => { return renderDate(ast['Date']) })}
+        {this.renderField("30", 'V', (ast: SwiftAST) => { return renderDate(ast['Date']) })}
+        {this.renderField("36", undefined, (ast: SwiftAST) => { return renderFloat(ast['Rate']) })}
+        {this.renderField("32", 'B', (ast: SwiftAST) => { return renderCurrency(ast['Amount'], ast['Currency']) })}
+        {this.renderField("33", 'B', (ast: SwiftAST) => { return renderCurrency(ast['Amount'], ast['Currency']) })}
+        {this.renderField("53", 'A', (ast: SwiftAST) => { return ast['Identifier Code'] || '' })}
+        {this.renderField("58", 'J', (ast: SwiftAST) => { return Details.renderIdentification(ast['Party Identification'])})}
       </Row>
     )
   }
 
-  renderRate(ast: any) {
+  static renderRate(ast: SwiftAST) : string {
     return ast['First Currency Code'] + '/' + ast['Second Currency Code'] + ' ' + renderFloat(ast['Rate'])
   }
 
-  renderIdentification(name: any) {
-    return name.split('\n').map((item: any, i: any) => {
+  static renderIdentification(name: string = '') : JSX.Element[] {
+    return name.split('\n').map((item: string, i: number) => {
       return <p key={i}>{item}</p>;
     })
   }
 
-  renderCustomField(type: any, option: any, name: any, mapper: any) {
+  renderCustomField(type: string, option: string, name: string, mapper: TypeMapper) : JSX.Element[] {
     const fields = this.findType({type: type, option: option})
 
-    return fields.map((field: any) => {
-      return this.renderType(name, mapper(field.ast))
+    return fields.map((field: Block4) => {
+      return Details.renderType(name, mapper(field.ast))
     })
   }
 
-  renderField(type: any, option: any, mapper: any) {
+  renderField(type: string, option: string | undefined, mapper: TypeMapper) : JSX.Element[] {
     const fields = this.findType({type: type, option: option})
 
-    return fields.map((field: any) => {
-      return this.renderType(FIELDS_DESCRIPTION[[type, option].join('')], mapper(field.ast))
+    return fields.map((field: Block4) => {
+      return Details.renderType(FIELDS_DESCRIPTION[[type, option].join('')], mapper(field.ast))
     })
   }
 
-  renderCurrencyField() {
+  renderCurrencyField() : JSX.Element[] {
     const types = this.findType(TYPES["Currency"])
 
-    return types.map((type: any) => {
-      return this.renderType(type.ast["Qualifier"],  renderCurrency(type.ast['Amount'], type.ast['Currency'] || type.ast['Currency Code']))
+    return types.map((type: Block4) => {
+      return Details.renderType(type.ast["Qualifier"] || '', renderCurrency(type.ast['Amount'], type.ast['Currency'] || type.ast['Currency Code']))
     })
   }
 
-  renderDates() {
+  renderDates() : JSX.Element[] {
     const types = this.findType(TYPES["Dates"])
 
-    return types.map((type: any) => {
+    return types.map((type: Block4) => {
       const date = moment(type.ast["Date"], "YYYYMMDD")
-      return this.renderType(type.ast["Qualifier"], date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")")
+      return Details.renderType(type.ast["Qualifier"] || '', date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")")
     })
   }
 
-  renderAccountsNumber() {
+  renderAccountsNumber() : JSX.Element[] {
     const types = this.findType(TYPES["Account number"])
 
-    return types.map((type: any) => {
-      return this.renderType("Account Number (" + type.ast["Qualifier"] + ")" , type.ast["Account Number"])
+    return types.map((type: Block4) => {
+      return Details.renderType("Account Number (" + type.ast["Qualifier"] + ")" , type.ast["Account Number"])
     })
   }
 
-  renderType(label: any, value: any) {
+  static renderType(label: string, value?: TypeMapperReturn) : JSX.Element {
     return (
       <React.Fragment>
           <OverlayTrigger
@@ -129,7 +136,7 @@ class Details extends Component<any, any> {
     )
   }
 
-  findType(attributes: any) {
+  findType(attributes: {type: string, option?: string}) : Block4[] {
     const details = this.props.parsedSwift.block4
     if(details) {
       return details.filter((element: any)=> {

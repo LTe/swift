@@ -1,20 +1,44 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import 'moment/locale/pl';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Validator from "./Validator";
-import './App.css';
+import './assets/css/App.css';
 import ListGroup from "react-bootstrap/ListGroup";
 import Details from './Details'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { darcula, solarizedlight, duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {darcula, duotoneDark, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {parse, findType, renderCurrency, onAccountChange} from './utils'
+import {AccountDetails, findType, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 
-class ValidatorWizard extends Component<any, any> {
+interface ValidatorWizardProps {
+  orderJSON: ParsedSwift
+  transactionJSON: ParsedSwift
+  accounts: AccountDetails[]
+}
+
+interface ValidatorWizardState {
+  orders: ParsedSwift[]
+  ordersRaw: string[]
+  currentOrderRaw: string
+  currentOrder: ParsedSwift
+  orderRaw: string
+  accounts: AccountDetails[]
+  transactionJSON: ParsedSwift
+  transactions: string[]
+  transactionRaw: string
+  orderJSON: ParsedSwift
+  currentOrderIndex: number
+  validOrders: number[]
+  invalidOrders: number[]
+  refDate: string
+  number: number
+}
+
+class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardState> {
   private readonly onAccountChange: OmitThisParameter<(this: React.Component, event: any) => void>;
 
   static defaultProps = {
@@ -25,17 +49,18 @@ class ValidatorWizard extends Component<any, any> {
 
   constructor(props: any) {
     super(props)
+
     this.state = {
       orders: [],
       ordersRaw: [],
       currentOrderRaw: "",
-      currentOrder: {},
+      currentOrder: {} as ParsedSwift,
       orderRaw: "",
       accounts: [],
-      transactionJSON: {},
-      transactions: {},
+      transactionJSON: {} as ParsedSwift,
+      transactions: [],
       transactionRaw: "",
-      orderJSON: {},
+      orderJSON: {} as ParsedSwift,
       currentOrderIndex: 0,
       validOrders: [],
       invalidOrders: [],
@@ -43,15 +68,7 @@ class ValidatorWizard extends Component<any, any> {
       number: 0
     }
 
-    this.onOrdersChange = this.onOrdersChange.bind(this)
-    this.onTransactionChange = this.onTransactionChange.bind(this)
-    this.generateWizard = this.generateWizard.bind(this)
-    this.clearWizard = this.clearWizard.bind(this)
-    this.onOrderClick = this.onOrderClick.bind(this)
-    this.markAsValid = this.markAsValid.bind(this)
-    this.markAsInvalid = this.markAsInvalid.bind(this)
     this.onAccountChange = onAccountChange.bind(this)
-    this.onRefChange = this.onRefChange.bind(this)
   }
 
   render() {
@@ -62,7 +79,7 @@ class ValidatorWizard extends Component<any, any> {
     }
   }
 
-  renderInputPage() {
+  renderInputPage() : JSX.Element {
     return (
       <Col className="m-1">
         <Row>
@@ -88,8 +105,8 @@ class ValidatorWizard extends Component<any, any> {
     )
   }
 
-  renderList() {
-    return this.state.orders.map((order: any, index: any) => {
+  renderList() : JSX.Element[] {
+    return this.state.orders.map((order: ParsedSwift, index: number) => {
       try {
         const buy = findType(order, "19", "B", "NETT")[0].ast
         const sell = findType(order, "19", "B", "PSTA")[0].ast
@@ -136,7 +153,7 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  renderWizard() {
+  renderWizard() : JSX.Element {
     return (
       <Row className="mt-1 ml-1 mr-1" >
         <Col xs={4}>
@@ -195,20 +212,20 @@ class ValidatorWizard extends Component<any, any> {
     )
   }
 
-  onTransactionChange(event: any) {
-    const value = event.target.value
+  onTransactionChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value || ''
     const transactions = this.state.transactions
     transactions[this.state.currentOrderIndex] = value
 
     this.setState({transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
   }
 
-  onOrdersChange(event : any) {
-    const value = event.target.value
+  onOrdersChange = (event : React.FormEvent<HTMLInputElement>) => {
+    const value = (event.currentTarget.value || '')
     this.setState({orderRaw: value})
   }
 
-  generateWizard() {
+  generateWizard = () => {
     try {
       const orders = this.state.orderRaw.replace(/ :/g, "\n:").split(/\n{2,}/)
       this.setState({
@@ -222,11 +239,11 @@ class ValidatorWizard extends Component<any, any> {
     }
   }
 
-  clearWizard() {
+  clearWizard = () => {
     this.setState({orders: []})
   }
 
-  onOrderClick(orderIndex: any) {
+  onOrderClick = (orderIndex: number) => {
     return (() => {
       return this.setState({
         currentOrderRaw: this.state.ordersRaw[orderIndex],
@@ -238,7 +255,7 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  markAsValid(orderIndex: any) {
+  markAsValid = (orderIndex: number) => {
     return (() => {
       const validOrders = this.state.validOrders
       const invalidOrders = this.state.invalidOrders.filter((order: any) => { return order !== orderIndex})
@@ -247,7 +264,7 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  markAsInvalid(orderIndex: any) {
+  markAsInvalid = (orderIndex: number) => {
     return (() => {
       const invalidOrders = this.state.invalidOrders
       const validOrders = this.state.validOrders.filter((order: any) => { return order !== orderIndex})
@@ -256,8 +273,9 @@ class ValidatorWizard extends Component<any, any> {
     })
   }
 
-  onRefChange(event: any) {
-    const value = event.target.value
+  onRefChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value || ''
+
     const refDate = value.slice(0, 10)
     const number = parseFloat(value.slice(10))
 
