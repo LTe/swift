@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import './App.css';
+import './assets/css/App.css';
 import Badge from "react-bootstrap/Badge";
 import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
@@ -13,7 +13,16 @@ interface TransactionDetails extends Readonly<BootstrapTableProps> {
   usdCurr: string
 }
 
-class Duplicate extends Component<any, any> {
+interface DuplicateProps {
+  mappedSwifts: ParsedSwift[]
+  duplicateValues: ParsedSwift[]
+  isDuplicate: boolean
+}
+
+interface DuplicateState {
+}
+
+class Duplicate extends Component<DuplicateProps, DuplicateState> {
   render() {
     const badge = this.props.isDuplicate ? (<Badge pill variant="danger"> Is duplicate </Badge>) : (
       <Badge pill variant="success"> Is not duplicate </Badge>)
@@ -43,7 +52,7 @@ class Duplicate extends Component<any, any> {
   }
 
   renderDetails() : JSX.Element {
-    const mappedValues : TransactionDetails[] = this.props.mappedSwifts.map((value: ParsedSwift, id: string) => {
+    const mappedValues : TransactionDetails[] = this.props.mappedSwifts.map((value: ParsedSwift, id: number) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]

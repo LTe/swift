@@ -1,21 +1,45 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import 'moment/locale/pl';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Validator from "./Validator";
-import './App.css';
+import './assets/css/App.css';
 import ListGroup from "react-bootstrap/ListGroup";
 import Details from './Details'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { darcula, solarizedlight, duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {darcula, duotoneDark, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {parse, findType, renderCurrency, onAccountChange} from './utils'
+import {AccountDetails, findType, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 import {FormControlProps} from "react-bootstrap";
 
-class ValidatorWizard extends Component<any, any> {
+interface ValidatorWizardProps {
+  orderJSON: ParsedSwift
+  transactionJSON: ParsedSwift
+  accounts: AccountDetails[]
+}
+
+interface ValidatorWizardState {
+  orders: ParsedSwift[]
+  ordersRaw: string[]
+  currentOrderRaw: string
+  currentOrder: ParsedSwift
+  orderRaw: string
+  accounts: AccountDetails[]
+  transactionJSON: ParsedSwift
+  transactions: string[]
+  transactionRaw: string
+  orderJSON: ParsedSwift
+  currentOrderIndex: number
+  validOrders: number[]
+  invalidOrders: number[]
+  refDate: string
+  number: number
+}
+
+class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardState> {
   private readonly onAccountChange: OmitThisParameter<(this: React.Component, event: any) => void>;
 
   static defaultProps = {
@@ -26,17 +50,18 @@ class ValidatorWizard extends Component<any, any> {
 
   constructor(props: any) {
     super(props)
+
     this.state = {
       orders: [],
       ordersRaw: [],
       currentOrderRaw: "",
-      currentOrder: {},
+      currentOrder: {} as ParsedSwift,
       orderRaw: "",
       accounts: [],
-      transactionJSON: {},
-      transactions: {},
+      transactionJSON: {} as ParsedSwift,
+      transactions: [],
       transactionRaw: "",
-      orderJSON: {},
+      orderJSON: {} as ParsedSwift,
       currentOrderIndex: 0,
       validOrders: [],
       invalidOrders: [],
@@ -89,8 +114,8 @@ class ValidatorWizard extends Component<any, any> {
     )
   }
 
-  renderList() : JSX.Element {
-    return this.state.orders.map((order: any, index: any) => {
+  renderList() : JSX.Element[] {
+    return this.state.orders.map((order: ParsedSwift, index: number) => {
       try {
         const buy = findType(order, "19", "B", "NETT")[0].ast
         const sell = findType(order, "19", "B", "PSTA")[0].ast
@@ -205,7 +230,7 @@ class ValidatorWizard extends Component<any, any> {
   }
 
   onOrdersChange(event : React.ChangeEvent<FormControlProps>) {
-    const value = event.target.value
+    const value = (event.target.value || '')
     this.setState({orderRaw: value})
   }
 
@@ -259,6 +284,7 @@ class ValidatorWizard extends Component<any, any> {
 
   onRefChange(event: React.ChangeEvent<FormControlProps>) {
     const value = event.target.value || ''
+
     const refDate = value.slice(0, 10)
     const number = parseFloat(value.slice(10))
 

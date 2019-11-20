@@ -1,14 +1,22 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
 import moment, {Moment} from 'moment';
 import 'moment/locale/pl';
-import {getAccountNumberFromFin, findType, renderFloat, SwiftAST, AccountDetails} from './utils'
+import {AccountDetails, findType, getAccountNumberFromFin, ParsedSwift, renderFloat, SwiftAST} from './utils'
 
-import './App.css';
+import './assets/css/App.css';
 
-class Validator extends Component<any, any> {
+interface ValidatorProps {
+  orderJSON: ParsedSwift
+  transactionJSON: ParsedSwift
+  accounts: AccountDetails[]
+}
+
+interface ValidatorState {}
+
+class Validator extends Component<ValidatorProps, ValidatorState> {
   render() {
     return (
       <React.Fragment>
@@ -43,7 +51,7 @@ class Validator extends Component<any, any> {
     let fundAccountNumber = getAccountNumberFromFin(fundAccount.ast)
     let orderAccountNumber = orderAccount.ast['Account Number'] || ''
 
-    let matchingAccount : AccountDetails = this.props.accounts.find((mapping: AccountDetails) => {
+    let matchingAccount = this.props.accounts.find((mapping: AccountDetails) => {
       return orderAccountNumber.includes(mapping.account)
     }) || {fund: 'Unknown number'}
 
@@ -61,7 +69,7 @@ class Validator extends Component<any, any> {
     let nostroAccountNumber = getAccountNumberFromFin(nostroAccount.ast)
     let orderAccountNumber = orderAccount.ast['Account Number'] || ''
 
-    let matchingAccount : AccountDetails = this.props.accounts.find((mapping: AccountDetails) => {
+    let matchingAccount = this.props.accounts.find((mapping: AccountDetails) => {
       return orderAccountNumber.includes(mapping.account)
     }) || {nostro: 'Unknown number'}
 

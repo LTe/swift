@@ -7,25 +7,36 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import JSONPretty from 'react-json-pretty'
 import Details from './Details'
-import './App.css'
+import './assets/css/App.css'
 import Validator from "./Validator"
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
 import Duplicate from "./Duplicate"
 import {isEqual} from "underscore"
 import Generator from "./Generator";
-import {onAccountChange, parse, ParsedSwift} from './utils'
+import {AccountDetails, onAccountChange, parse, ParsedSwift} from './utils'
 import ValidatorWizard from "./ValidatorWizard";
 import {FormControlProps} from "react-bootstrap";
 
-class App extends Component<any, any> {
+interface AppState {
+    orderJSON: ParsedSwift
+    transactionJSON: ParsedSwift
+    accounts: AccountDetails[]
+    isDuplicate: boolean
+    duplicateValues: ParsedSwift[]
+    mappedSwifts: ParsedSwift[]
+}
+
+interface AppProps {}
+
+class App extends Component<AppProps, AppState> {
   private readonly onAccountChange: any;
 
-  constructor(props: any) {
+  constructor(props: AppProps) {
     super(props);
     this.state = {
-      orderJSON: {},
-      transactionJSON: {},
+      orderJSON: {} as ParsedSwift,
+      transactionJSON: {} as ParsedSwift,
       accounts: [],
       isDuplicate: false,
       duplicateValues: [],

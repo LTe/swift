@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import moment, {Moment} from 'moment';
-import {renderDate, renderFloat, renderCurrency, getAccountNumberFromFin, SwiftAST, Block4} from "./utils"
+import {Block4, getAccountNumberFromFin, ParsedSwift, renderCurrency, renderDate, renderFloat, SwiftAST} from "./utils"
 import 'moment/locale/pl';
-import './App.css';
+import './assets/css/App.css';
 
 type TypeMapperReturn = string | JSX.Element | JSX.Element[] | Moment
 type TypeMapper = (ast: SwiftAST) => TypeMapperReturn
@@ -41,7 +41,12 @@ const TOOLTIPS: { [id: string] : string; } = {
   'NETT': "Net Cash Amount"
 }
 
-class Details extends Component<any, any> {
+interface DetailsProps {
+  parsedSwift: ParsedSwift
+}
+interface DetailsState {}
+
+class Details extends Component<DetailsProps, DetailsState> {
   render() {
     return (
       <Row as="dl">

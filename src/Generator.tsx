@@ -1,18 +1,28 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {ParsedSwift, onAccountChange, parse, findType, getAccountNumberFromFin, AccountDetails, Block4} from './utils'
+import {AccountDetails, Block4, findType, getAccountNumberFromFin, onAccountChange, parse, ParsedSwift} from './utils'
 import moment from 'moment';
-import 'moment/locale/pl';
 import JSONPretty from 'react-json-pretty'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { darcula, solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
+import {darcula, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {FormControlProps} from "react-bootstrap";
 
-class Generator extends Component<any, any> {
+interface GeneratorProps {}
+
+interface GeneratorState {
+  accounts: AccountDetails[]
+  templates: ParsedSwift[]
+  orders: ParsedSwift[]
+  transactions: string[]
+  rawTemplates: string[]
+  rawOrders: string[]
+}
+
+class Generator extends Component<GeneratorProps, GeneratorState> {
   private readonly onAccountChange: any;
 
   constructor(props: any) {
@@ -32,11 +42,6 @@ class Generator extends Component<any, any> {
     this.onAccountChange = onAccountChange.bind(this)
     this.generateTransaction = this.generateTransaction.bind(this)
   }
-
-  tryGenerateTransactions() : void {
-    this.setState({transactions: this.state.orders.map(this.generateTransaction)})
-  }
-
   onOrderChange (event: React.ChangeEvent<FormControlProps>) : void {
     const orders = (event.target.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
     this.setState({orders: orders.map(parse), rawOrders: orders})
@@ -50,7 +55,7 @@ class Generator extends Component<any, any> {
   generateTransaction(swift: ParsedSwift) {
     try {
       const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
-      const matchingAccount: AccountDetails = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
+      const matchingAccount = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
