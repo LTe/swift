@@ -13,7 +13,6 @@ import Button from "react-bootstrap/Button";
 import {AccountDetails, findType, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
-import {FormControlProps} from "react-bootstrap";
 
 interface ValidatorWizardProps {
   orderJSON: ParsedSwift
@@ -69,15 +68,7 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
       number: 0
     }
 
-    this.onOrdersChange = this.onOrdersChange.bind(this)
-    this.onTransactionChange = this.onTransactionChange.bind(this)
-    this.generateWizard = this.generateWizard.bind(this)
-    this.clearWizard = this.clearWizard.bind(this)
-    this.onOrderClick = this.onOrderClick.bind(this)
-    this.markAsValid = this.markAsValid.bind(this)
-    this.markAsInvalid = this.markAsInvalid.bind(this)
     this.onAccountChange = onAccountChange.bind(this)
-    this.onRefChange = this.onRefChange.bind(this)
   }
 
   render() {
@@ -221,20 +212,20 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
     )
   }
 
-  onTransactionChange(event: React.ChangeEvent<FormControlProps>) {
-    const value = event.target.value || ''
+  onTransactionChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value || ''
     const transactions = this.state.transactions
     transactions[this.state.currentOrderIndex] = value
 
     this.setState({transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
   }
 
-  onOrdersChange(event : React.ChangeEvent<FormControlProps>) {
-    const value = (event.target.value || '')
+  onOrdersChange = (event : React.FormEvent<HTMLInputElement>) => {
+    const value = (event.currentTarget.value || '')
     this.setState({orderRaw: value})
   }
 
-  generateWizard() {
+  generateWizard = () => {
     try {
       const orders = this.state.orderRaw.replace(/ :/g, "\n:").split(/\n{2,}/)
       this.setState({
@@ -248,11 +239,11 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
     }
   }
 
-  clearWizard() {
+  clearWizard = () => {
     this.setState({orders: []})
   }
 
-  onOrderClick(orderIndex: number) {
+  onOrderClick = (orderIndex: number) => {
     return (() => {
       return this.setState({
         currentOrderRaw: this.state.ordersRaw[orderIndex],
@@ -264,7 +255,7 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
     })
   }
 
-  markAsValid(orderIndex: number) {
+  markAsValid = (orderIndex: number) => {
     return (() => {
       const validOrders = this.state.validOrders
       const invalidOrders = this.state.invalidOrders.filter((order: any) => { return order !== orderIndex})
@@ -273,7 +264,7 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
     })
   }
 
-  markAsInvalid(orderIndex: number) {
+  markAsInvalid = (orderIndex: number) => {
     return (() => {
       const invalidOrders = this.state.invalidOrders
       const validOrders = this.state.validOrders.filter((order: any) => { return order !== orderIndex})
@@ -282,8 +273,8 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
     })
   }
 
-  onRefChange(event: React.ChangeEvent<FormControlProps>) {
-    const value = event.target.value || ''
+  onRefChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value || ''
 
     const refDate = value.slice(0, 10)
     const number = parseFloat(value.slice(10))

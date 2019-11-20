@@ -15,8 +15,7 @@ import Duplicate from "./Duplicate"
 import {isEqual} from "underscore"
 import Generator from "./Generator";
 import {AccountDetails, onAccountChange, parse, ParsedSwift} from './utils'
-import ValidatorWizard from "./ValidatorWizard";
-import {FormControlProps} from "react-bootstrap";
+import ValidatorWizard from "./ValidatorWizard"
 
 interface AppState {
     orderJSON: ParsedSwift
@@ -43,14 +42,11 @@ class App extends Component<AppProps, AppState> {
       mappedSwifts: []
     }
 
-    this.onOrderChange = this.onOrderChange.bind(this);
-    this.onTransactionChange = this.onTransactionChange.bind(this);
     this.onAccountChange = onAccountChange.bind(this);
-    this.duplicateCheck = this.duplicateCheck.bind(this);
   }
 
-  duplicateCheck(event: React.ChangeEvent<FormControlProps>) {
-    const swifts = (event.target.value || '').split(/\n{2,}/)
+  duplicateCheck = (event: React.FormEvent<HTMLInputElement>) => {
+    const swifts = (event.currentTarget.value || '').split(/\n{2,}/)
     const mappedSwifts = swifts.map((swift: string) => {
       return parse(swift)
     })
@@ -71,13 +67,13 @@ class App extends Component<AppProps, AppState> {
     )
   }
 
-  onOrderChange(event: React.ChangeEvent<FormControlProps>) {
-    const value = event.target.value || ''
+  onOrderChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const value = event.currentTarget.value || ''
     this.setState({orderJSON: parse(value)})
   }
 
-  onTransactionChange(event: React.ChangeEvent<FormControlProps>) {
-    const value = event.target.value || ''
+  onTransactionChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const value = event.currentTarget.value || ''
     this.setState({transactionJSON: parse(value)})
   }
 

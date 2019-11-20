@@ -9,7 +9,6 @@ import moment from 'moment';
 import JSONPretty from 'react-json-pretty'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
-import {FormControlProps} from "react-bootstrap";
 
 interface GeneratorProps {}
 
@@ -37,22 +36,19 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
       rawOrders: []
     }
 
-    this.onOrderChange = this.onOrderChange.bind(this)
-    this.onTemplateChange = this.onTemplateChange.bind(this)
     this.onAccountChange = onAccountChange.bind(this)
-    this.generateTransaction = this.generateTransaction.bind(this)
   }
-  onOrderChange (event: React.ChangeEvent<FormControlProps>) : void {
-    const orders = (event.target.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
+  onOrderChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const orders = (event.currentTarget.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
     this.setState({orders: orders.map(parse), rawOrders: orders})
   }
 
-  onTemplateChange (event: React.ChangeEvent<FormControlProps>) : void {
-    const templates =  (event.target.value || '').split(/\n{2,}/)
+  onTemplateChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+    const templates =  (event.currentTarget.value || '').split(/\n{2,}/)
     this.setState({templates: templates.map(parse), rawTemplates: templates})
   }
 
-  generateTransaction(swift: ParsedSwift) {
+  generateTransaction = (swift: ParsedSwift) => {
     try {
       const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
       const matchingAccount = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
