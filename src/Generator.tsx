@@ -59,7 +59,7 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
-      const matchingTemplateIndex = this.state.templates.findIndex((template: ParsedSwift, index: any) => {
+      const matchingTemplateIndex = this.state.templates.findIndex((template: ParsedSwift) => {
         const fundAccount = findType(template, '83', 'J')[0]
         const nostoAccount = findType(template, '58', 'J')[0]
         if (!fundAccount && !nostoAccount) { return false }
@@ -67,11 +67,7 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
         const fundAccountNumber = getAccountNumberFromFin(fundAccount.ast)
         const nostoAccountNumber = getAccountNumberFromFin(nostoAccount.ast)
 
-        if (fundAccountNumber === matchingAccount.fund && nostoAccountNumber === matchingAccount.nostro) {
-          return true
-        } else {
-          return false
-        }
+        return !!(fundAccountNumber === matchingAccount.fund && nostoAccountNumber === matchingAccount.nostro);
       })
 
       const matchingTemplate = this.state.templates[matchingTemplateIndex]

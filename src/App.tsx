@@ -126,10 +126,10 @@ class App extends Component<AppProps, AppState> {
                 <hr className="col-xs-12"/>
                 <Row>
                   <Col xs={6}>
-                    <Details parsedSwift={this.state.orderJSON}></Details>
+                    <Details parsedSwift={this.state.orderJSON}/>
                   </Col>
                   <Col xs={6}>
-                    <Details parsedSwift={this.state.transactionJSON}></Details>
+                    <Details parsedSwift={this.state.transactionJSON}/>
                   </Col>
                 </Row>
                 <Row>

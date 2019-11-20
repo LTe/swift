@@ -52,7 +52,7 @@ class Duplicate extends Component<DuplicateProps, DuplicateState> {
   }
 
   renderDetails() : JSX.Element {
-    const mappedValues : TransactionDetails[] = this.props.mappedSwifts.map((value: ParsedSwift, id: number) => {
+    const mappedValues : TransactionDetails[] = this.props.mappedSwifts.map((value: ParsedSwift) => {
       const valueDate = this.findType(value, "98", "A", "VALU")[0]
       const exoticCurr = this.findType(value, "19", "B", "NETT")[0]
       const usdCurr = this.findType(value, "19", "B", "PSTA")[0]
