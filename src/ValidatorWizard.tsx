@@ -10,7 +10,7 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, duotoneDark, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {AccountDetails, findType, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
+import {AccountDetails, findTypes, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 
@@ -108,8 +108,8 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
   renderList() : JSX.Element[] {
     return this.state.orders.map((order: ParsedSwift, index: number) => {
       try {
-        const buy = findType(order, "19", "B", "NETT")[0].ast
-        const sell = findType(order, "19", "B", "PSTA")[0].ast
+        const buy = findTypes(order, "19", "B", "NETT")[0].ast
+        const sell = findTypes(order, "19", "B", "PSTA")[0].ast
         const active = index === this.state.currentOrderIndex
         let variant : "success" | "danger" | undefined
 
