@@ -4,7 +4,7 @@ import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {AccountDetails, Block4, findType, getAccountNumberFromFin, onAccountChange, parse, ParsedSwift} from './utils'
+import {AccountDetails, Block4, findTypes, getAccountNumberFromFin, onAccountChange, parse, ParsedSwift} from './utils'
 import moment from 'moment';
 import JSONPretty from 'react-json-pretty'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
@@ -50,14 +50,14 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
 
   generateTransaction = (swift: ParsedSwift) => {
     try {
-      const accountNumber = findType(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
+      const accountNumber = findTypes(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
       const matchingAccount = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
       const matchingTemplateIndex = this.state.templates.findIndex((template: ParsedSwift) => {
-        const fundAccount = findType(template, '83', 'J')[0]
-        const nostoAccount = findType(template, '58', 'J')[0]
+        const fundAccount = findTypes(template, '83', 'J')[0]
+        const nostoAccount = findTypes(template, '58', 'J')[0]
         if (!fundAccount && !nostoAccount) { return false }
 
         const fundAccountNumber = getAccountNumberFromFin(fundAccount.ast)
@@ -70,11 +70,11 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
 
       if (!matchingTemplate) { return 'There was a problem with generating transaction' }
 
-      const valueDate = findType(swift,'98', 'A', 'VALU')[0]
+      const valueDate = findTypes(swift,'98', 'A', 'VALU')[0]
       const tradeDate = this.generateTradeDate(valueDate)
-      const sellAmount = findType(swift, '19', 'B', 'NETT')[0]
-      const buyAmount = findType(swift, '19', 'B', 'PSTA')[0]
-      const rate = findType(swift, '92', 'B', 'EXCH')[0]
+      const sellAmount = findTypes(swift, '19', 'B', 'NETT')[0]
+      const buyAmount = findTypes(swift, '19', 'B', 'PSTA')[0]
+      const rate = findTypes(swift, '92', 'B', 'EXCH')[0]
 
       let transaction = this.state.rawTemplates[matchingTemplateIndex].slice()
 

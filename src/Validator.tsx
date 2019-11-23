@@ -4,7 +4,7 @@ import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
 import moment, {Moment} from 'moment';
 import 'moment/locale/pl';
-import {AccountDetails, findType, getAccountNumberFromFin, ParsedSwift, renderFloat, SwiftAST} from './utils'
+import {AccountDetails, findTypes, getAccountNumberFromFin, ParsedSwift, renderFloat, SwiftAST} from './utils'
 
 import './assets/css/App.css';
 
@@ -43,8 +43,8 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validateFundAccount() : JSX.Element | undefined {
-    let orderAccount = findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
-    let fundAccount = findType(this.props.transactionJSON, '83', 'J')[0]
+    let orderAccount = findTypes(this.props.orderJSON, '97', 'A', 'SAFE')[0]
+    let fundAccount = findTypes(this.props.transactionJSON, '83', 'J')[0]
 
     if(!orderAccount || !fundAccount) { return }
 
@@ -61,8 +61,8 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validateNostroAccount(): JSX.Element | undefined {
-    let orderAccount = findType(this.props.orderJSON, '97', 'A', 'SAFE')[0]
-    let nostroAccount = findType(this.props.transactionJSON, '58', 'J')[0]
+    let orderAccount = findTypes(this.props.orderJSON, '97', 'A', 'SAFE')[0]
+    let nostroAccount = findTypes(this.props.transactionJSON, '58', 'J')[0]
 
     if(!orderAccount || !nostroAccount) { return }
 
@@ -79,10 +79,10 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validateRate() : JSX.Element | undefined {
-    let orderRateRaw = findType(this.props.orderJSON, '92', 'B', 'EXCH')[0]
-    let rateRaw = findType(this.props.transactionJSON, '36')[0]
-    let buyRaw = findType(this.props.transactionJSON, '32', 'B')[0]
-    let sellRaw = findType(this.props.transactionJSON, '33', 'B')[0]
+    let orderRateRaw = findTypes(this.props.orderJSON, '92', 'B', 'EXCH')[0]
+    let rateRaw = findTypes(this.props.transactionJSON, '36')[0]
+    let buyRaw = findTypes(this.props.transactionJSON, '32', 'B')[0]
+    let sellRaw = findTypes(this.props.transactionJSON, '33', 'B')[0]
 
     if(!rateRaw || !buyRaw || !sellRaw || !orderRateRaw) { return }
 
@@ -96,8 +96,8 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validateTradeDate() : JSX.Element | undefined {
-    let orderValueRaw = findType(this.props.orderJSON, '98', 'A', 'VALU')[0]
-    let transactionValueRaw = findType(this.props.transactionJSON, '30', 'T')[0]
+    let orderValueRaw = findTypes(this.props.orderJSON, '98', 'A', 'VALU')[0]
+    let transactionValueRaw = findTypes(this.props.transactionJSON, '30', 'T')[0]
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
@@ -118,8 +118,8 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validateValueDate() : JSX.Element | undefined {
-    let orderValueRaw = findType(this.props.orderJSON,'98', 'A', 'VALU')[0]
-    let transactionValueRaw = findType(this.props.transactionJSON, '30', 'V')[0]
+    let orderValueRaw = findTypes(this.props.orderJSON,'98', 'A', 'VALU')[0]
+    let transactionValueRaw = findTypes(this.props.transactionJSON, '30', 'V')[0]
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
@@ -133,8 +133,8 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validatePstaAmount() : JSX.Element | undefined {
-    let orderValueRaw = findType(this.props.orderJSON,'19', 'B', 'PSTA')[0]
-    let transactionValueRaw = findType(this.props.transactionJSON, '32', 'B')[0]
+    let orderValueRaw = findTypes(this.props.orderJSON,'19', 'B', 'PSTA')[0]
+    let transactionValueRaw = findTypes(this.props.transactionJSON, '32', 'B')[0]
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
@@ -145,8 +145,8 @@ class Validator extends Component<ValidatorProps, ValidatorState> {
   }
 
   validateNettAmount() : JSX.Element | undefined {
-    let orderValueRaw = findType(this.props.orderJSON, '19', 'B', 'NETT')[0]
-    let transactionValueRaw = findType(this.props.transactionJSON, '33', 'B')[0]
+    let orderValueRaw = findTypes(this.props.orderJSON, '19', 'B', 'NETT')[0]
+    let transactionValueRaw = findTypes(this.props.transactionJSON, '33', 'B')[0]
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 

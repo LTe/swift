@@ -11,8 +11,7 @@ import './assets/css/App.css'
 import Validator from "./Validator"
 import Tab from 'react-bootstrap/Tab'
 import Tabs from 'react-bootstrap/Tabs'
-import Duplicate from "./Duplicate"
-import {isEqual} from "underscore"
+import DuplicateCheck from "./Duplicate"
 import Generator from "./Generator";
 import {AccountDetails, onAccountChange, parse, ParsedSwift} from './utils'
 import ValidatorWizard from "./ValidatorWizard"
@@ -21,8 +20,6 @@ interface AppState {
     orderJSON: ParsedSwift
     transactionJSON: ParsedSwift
     accounts: AccountDetails[]
-    isDuplicate: boolean
-    duplicateValues: ParsedSwift[]
     mappedSwifts: ParsedSwift[]
 }
 
@@ -37,34 +34,10 @@ class App extends Component<AppProps, AppState> {
       orderJSON: {} as ParsedSwift,
       transactionJSON: {} as ParsedSwift,
       accounts: [],
-      isDuplicate: false,
-      duplicateValues: [],
       mappedSwifts: []
     }
 
     this.onAccountChange = onAccountChange.bind(this);
-  }
-
-  duplicateCheck = (event: React.FormEvent<HTMLInputElement>) => {
-    const swifts = (event.currentTarget.value || '').split(/\n{2,}/)
-    const mappedSwifts = swifts.map((swift: string) => {
-      return parse(swift)
-    })
-    const duplicatedOrders = mappedSwifts.filter((order: ParsedSwift) => {
-      return mappedSwifts.filter(
-      (swift: ParsedSwift) => {
-        return isEqual(swift, order)
-      }).length > 1
-    })
-    const duplicateDetected = duplicatedOrders.length > 0
-
-    this.setState(
-      {
-        isDuplicate: duplicateDetected,
-        duplicateValues: duplicatedOrders,
-        mappedSwifts: mappedSwifts
-      }
-    )
   }
 
   onOrderChange = (event: React.FormEvent<HTMLInputElement>) : void => {
@@ -153,26 +126,13 @@ class App extends Component<AppProps, AppState> {
               </Container>
             </Tab>
             <Tab eventKey="duplicate" title="Duplicate check">
-              <Container className="mt-2">
-                <Row>
-                  <Col>
-                    <Form>
-                      <Form.Group controlId="exampleForm.ControlTextarea1">
-                        <Form.Control placeholder="Orders list" as="textarea" rows="10" onChange={this.duplicateCheck}/>
-                      </Form.Group>
-                    </Form>
-                  </Col>
-                </Row>
-                <Row>
-                  <Duplicate isDuplicate={this.state.isDuplicate} mappedSwifts={this.state.mappedSwifts} duplicateValues={this.state.duplicateValues}/>
-                </Row>
-              </Container>
+              <DuplicateCheck />
             </Tab>
             <Tab eventKey="generator" title="Order generator">
-              <Generator/>
+              <Generator />
             </Tab>
             <Tab eventKey="validatorWizard" title="Validator wizard">
-              <ValidatorWizard/>
+              <ValidatorWizard />
             </Tab>
           </Tabs>
         </div>

@@ -135,7 +135,7 @@ export function getAccountNumberFromFin(ast: SwiftAST) : string {
   return partyIdentification.split("/")[2]
 }
 
-export function findType(json: ParsedSwift, type: any, option?: any, qualifier?: any): Block4[] {
+export function findTypes(json: ParsedSwift, type: string, option?: string, qualifier?: string) : Block4[] {
   try {
     const details = json['block4']
     if(details) {
@@ -148,6 +148,10 @@ export function findType(json: ParsedSwift, type: any, option?: any, qualifier?:
   } catch (e) {
     return []
   }
+}
+
+export function findType(json: ParsedSwift, type: string, option?: string, qualifier?: string) : Block4 | undefined {
+  return findTypes(json, type, option, qualifier)[0]
 }
 
 export function renderDate(dateString?: string) : moment.Moment | string {
