@@ -86,14 +86,18 @@ export interface AccountDetails {
 
 export function onAccountChange(this: Component, event: React.ChangeEvent<HTMLInputElement>) {
   const value = event.target.value
+  const accounts  = parseAccounts(value)
+
+  this.setState({accounts: accounts})
+}
+
+export function parseAccounts(value: string) : AccountDetails[] {
   const lines = value.split('\n')
-  const accounts: AccountDetails[] = lines.map((line: string) => {
+  return lines.map((line: string) => {
     const accountDetails = line.split(',')
     const fundAccount = (accountDetails[1] || '').slice(0, -5) + '5-000'
     return {account: accountDetails[0], fund: fundAccount, nostro: accountDetails[2]}
   })
-
-  this.setState({accounts: accounts})
 }
 
 export function tryParse(value: string) : ParsedSwift {
@@ -138,9 +142,15 @@ export function getAccountNumberFromFin(ast: SwiftAST) : string {
 export function findTypes(json: ParsedSwift, type: string, option?: string, qualifier?: string) : Block4[] {
   try {
     const details = json['block4']
-    if(details) {
-      return details.filter((element: any)=> {
-        return element.type === type && element.option === option && element.ast["Qualifier"] === qualifier
+    if (details) {
+      return details.filter((element: Block4) => {
+        return element.type === type && element.option === option
+      }).filter((element: Block4) => {
+        if (qualifier) {
+          return element.ast["Qualifier"] === qualifier
+        } else {
+          return true
+        }
       }) || []
     } else {
       return []

@@ -5,7 +5,7 @@ import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import {BootstrapTable, BootstrapTableProps, TableHeaderColumn} from 'react-bootstrap-table';
-import {Block4, ParsedSwift, findType, parse} from "./utils";
+import {Block4, findType, parse, ParsedSwift} from "./utils";
 import {Col, Form} from "react-bootstrap";
 import {isEqual} from "underscore"
 
