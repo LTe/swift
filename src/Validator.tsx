@@ -4,7 +4,7 @@ import Row from 'react-bootstrap/Row';
 import Badge from 'react-bootstrap/Badge';
 import moment, {Moment} from 'moment';
 import 'moment/locale/pl';
-import {AccountDetails, Block4, findType, findTypes, getAccountNumberFromFin, ParsedSwift, SwiftAST} from './utils'
+import {AccountDetails, Block4, findType, getAccountNumberFromFin, ParsedSwift, SwiftAST} from './utils'
 
 import './assets/css/App.css';
 
@@ -41,8 +41,8 @@ function Validator(props: ValidatorProps): JSX.Element {
   }
 
   function validateNostroAccount(): JSX.Element | null {
-    let orderAccount = findTypes(props.orderJSON, '97', 'A', 'SAFE')[0]
-    let nostroAccount = findTypes(props.transactionJSON, '58', 'J')[0]
+    let orderAccount = findType(props.orderJSON, '97', 'A', 'SAFE')
+    let nostroAccount = findType(props.transactionJSON, '58', 'J')
 
     if (orderAccount && nostroAccount) {
       return validateAccount(nostroAccount, nostroAccount, 'Fund Account Number')
@@ -69,8 +69,8 @@ function Validator(props: ValidatorProps): JSX.Element {
   }
 
   function validateTradeDate() : JSX.Element | undefined {
-    let orderValueRaw = findTypes(props.orderJSON, '98', 'A', 'VALU')[0]
-    let transactionValueRaw = findTypes(props.transactionJSON, '30', 'T')[0]
+    let orderValueRaw = findType(props.orderJSON, '98', 'A', 'VALU')
+    let transactionValueRaw = findType(props.transactionJSON, '30', 'T')
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
@@ -91,8 +91,8 @@ function Validator(props: ValidatorProps): JSX.Element {
   }
 
   function validateValueDate() : JSX.Element | undefined {
-    let orderValueRaw = findTypes(props.orderJSON,'98', 'A', 'VALU')[0]
-    let transactionValueRaw = findTypes(props.transactionJSON, '30', 'V')[0]
+    let orderValueRaw = findType(props.orderJSON,'98', 'A', 'VALU')
+    let transactionValueRaw = findType(props.transactionJSON, '30', 'V')
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
@@ -106,8 +106,8 @@ function Validator(props: ValidatorProps): JSX.Element {
   }
 
   function validatePstaAmount() : JSX.Element | undefined {
-    let orderValueRaw = findTypes(props.orderJSON,'19', 'B', 'PSTA')[0]
-    let transactionValueRaw = findTypes(props.transactionJSON, '32', 'B')[0]
+    let orderValueRaw = findType(props.orderJSON,'19', 'B', 'PSTA')
+    let transactionValueRaw = findType(props.transactionJSON, '32', 'B')
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
@@ -118,8 +118,8 @@ function Validator(props: ValidatorProps): JSX.Element {
   }
 
   function validateNettAmount() : JSX.Element | undefined {
-    let orderValueRaw = findTypes(props.orderJSON, '19', 'B', 'NETT')[0]
-    let transactionValueRaw = findTypes(props.transactionJSON, '33', 'B')[0]
+    let orderValueRaw = findType(props.orderJSON, '19', 'B', 'NETT')
+    let transactionValueRaw = findType(props.transactionJSON, '33', 'B')
 
     if(!orderValueRaw || !transactionValueRaw) { return }
 
