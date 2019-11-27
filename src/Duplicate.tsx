@@ -5,35 +5,35 @@ import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 import {BootstrapTable, BootstrapTableProps, TableHeaderColumn} from 'react-bootstrap-table';
-import {Block4, ParsedSwift, findType, parse} from "./utils";
+import {Block4, findType, parse, ParsedSwift} from "./utils";
 import {Col, Form} from "react-bootstrap";
 import {isEqual} from "underscore"
 
 interface TransactionDetails extends Readonly<BootstrapTableProps> {
-  valueDate: string
-  exoticCurr: string
-  usdCurr: string
+  valueDate: string;
+  exoticCurr: string;
+  usdCurr: string;
 }
 
 interface DuplicateProps {
-  mappedSwifts: ParsedSwift[]
-  duplicateValues: ParsedSwift[]
-  isDuplicate: boolean
+  mappedSwifts: ParsedSwift[];
+  duplicateValues: ParsedSwift[];
+  isDuplicate: boolean;
 }
 
-function renderDetails(mappedSwifts: ParsedSwift[]) : JSX.Element {
-  const mappedValues : TransactionDetails[] = mappedSwifts.map((value: ParsedSwift) => {
+function renderDetails(mappedSwifts: ParsedSwift[]): JSX.Element {
+  const mappedValues: TransactionDetails[] = mappedSwifts.map((value: ParsedSwift) => {
     const valueDate = findType(value, "98", "A", "VALU")
     const exoticCurr = findType(value, "19", "B", "NETT")
     const usdCurr = findType(value, "19", "B", "PSTA")
 
-    try {
+    if (valueDate && exoticCurr && usdCurr) {
       return {
-        valueDate: valueDate!.ast.Date,
-        exoticCurr: exoticCurr!.ast.Amount + ' ' + exoticCurr!.ast["Currency Code"],
-        usdCurr: usdCurr!.ast.Amount + ' ' + usdCurr!.ast["Currency Code"]
+        valueDate: valueDate.ast.Date,
+        exoticCurr: exoticCurr.ast.Amount + ' ' + exoticCurr.ast["Currency Code"],
+        usdCurr: usdCurr.ast.Amount + ' ' + usdCurr.ast["Currency Code"]
       } as TransactionDetails
-    } catch (e) {
+    } else  {
       return { valueDate: 'Unable to display', exoticCurr: 'Unable to display', usdCurr: 'Unable to display' } as TransactionDetails
     }
   })
@@ -47,15 +47,25 @@ function renderDetails(mappedSwifts: ParsedSwift[]) : JSX.Element {
   )
 }
 
-function renderDuplicateDetails(duplicateValues: ParsedSwift[]) : JSX.Element[] {
+function renderRow(valueDate: Block4, exoticCurr: Block4, usdCurr: Block4, index: number): JSX.Element {
+  return (
+    <tr key={index}>
+      <td>{valueDate.ast.Date}</td>
+      <td>{exoticCurr.ast.Amount} {exoticCurr.ast["Currency Code"]}</td>
+      <td>{usdCurr.ast.Amount} {usdCurr.ast["Currency Code"]}</td>
+    </tr>
+  )
+}
+
+function renderDuplicateDetails(duplicateValues: ParsedSwift[]): JSX.Element[] {
   return duplicateValues.map((value: ParsedSwift, index: number) => {
     const valueDate = findType(value, "98", "A", "VALU")
     const exoticCurr = findType(value, "19", "B", "NETT")
     const usdCurr = findType(value, "19", "B", "PSTA")
 
-    try {
-      return renderRow(valueDate!, exoticCurr!, usdCurr!, index)
-    } catch (e) {
+    if (valueDate && exoticCurr && usdCurr) {
+      return renderRow(valueDate, exoticCurr, usdCurr, index)
+    } else {
       return (
         <tr>
           <td>Unable to display</td>
@@ -67,22 +77,12 @@ function renderDuplicateDetails(duplicateValues: ParsedSwift[]) : JSX.Element[] 
   })
 }
 
-function renderRow(valueDate: Block4, exoticCurr: Block4, usdCurr: Block4, index: number) : JSX.Element {
-  return (
-    <tr key={index}>
-      <td>{valueDate.ast.Date}</td>
-      <td>{exoticCurr.ast.Amount} {exoticCurr.ast["Currency Code"]}</td>
-      <td>{usdCurr.ast.Amount} {usdCurr.ast["Currency Code"]}</td>
-    </tr>
-  )
-}
-
-function badge(isDuplicate: boolean) : JSX.Element {
+function badge(isDuplicate: boolean): JSX.Element {
   return isDuplicate ? (<Badge pill variant="danger"> Is duplicate </Badge>) : (
     <Badge pill variant="success"> Is not duplicate </Badge>)
 }
 
-function duplicateCheck(event: React.FormEvent<HTMLInputElement>) {
+function duplicateCheck(event: React.FormEvent<HTMLInputElement>): DuplicateProps {
   const swifts = (event.currentTarget.value || '').split(/\n{2,}/)
   const mappedSwifts = swifts.map(parse)
   const duplicatedOrders = mappedSwifts.filter((order: ParsedSwift) => {
@@ -100,7 +100,7 @@ function duplicateCheck(event: React.FormEvent<HTMLInputElement>) {
   }
 }
 
-function Duplicate(props: DuplicateProps) {
+function Duplicate(props: DuplicateProps): JSX.Element {
   return (
     <Container>
       <Row>{badge(props.isDuplicate)}</Row>
@@ -125,14 +125,14 @@ function Duplicate(props: DuplicateProps) {
   )
 }
 
-export function DuplicateCheck() : JSX.Element {
+export function DuplicateCheck(): JSX.Element {
   const [state, setState] = useState<DuplicateProps>({
     isDuplicate: false,
     duplicateValues: [],
     mappedSwifts: []
   })
 
-  function updateDuplicates(event: React.FormEvent<HTMLInputElement>) {
+  function updateDuplicates(event: React.FormEvent<HTMLInputElement>): void {
     setState(duplicateCheck(event))
   }
 

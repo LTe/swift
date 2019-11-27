@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import 'moment/locale/pl';
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -10,159 +10,211 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, duotoneDark, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {AccountDetails, findTypes, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
+import {findType, parse, ParsedSwift, renderCurrency, useAccountInput} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 
-interface ValidatorWizardProps {
-  orderJSON: ParsedSwift
-  transactionJSON: ParsedSwift
-  accounts: AccountDetails[]
-}
-
 interface ValidatorWizardState {
-  orders: ParsedSwift[]
-  ordersRaw: string[]
-  currentOrderRaw: string
-  currentOrder: ParsedSwift
-  orderRaw: string
-  accounts: AccountDetails[]
-  transactionJSON: ParsedSwift
-  transactions: string[]
-  transactionRaw: string
-  orderJSON: ParsedSwift
-  currentOrderIndex: number
-  validOrders: number[]
-  invalidOrders: number[]
-  refDate: string
-  number: number
+  orders: ParsedSwift[];
+  ordersRaw: string[];
+  currentOrderRaw: string;
+  currentOrder: ParsedSwift;
+  orderRaw: string;
+  transactionJSON: ParsedSwift;
+  transactions: string[];
+  transactionRaw: string;
+  orderJSON: ParsedSwift;
+  currentOrderIndex: number;
+  refDate: string;
+  number: number;
 }
 
-class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardState> {
-  private readonly onAccountChange: OmitThisParameter<(this: React.Component, event: any) => void>;
+function ValidatorWizard(): JSX.Element {
+  const [state, setState] = useState<ValidatorWizardState>({
+    orders: [],
+    ordersRaw: [],
+    currentOrderRaw: "",
+    currentOrder: {} as ParsedSwift,
+    orderRaw: "",
+    transactionJSON: {} as ParsedSwift,
+    transactions: [],
+    transactionRaw: "",
+    orderJSON: {} as ParsedSwift,
+    currentOrderIndex: 0,
+    refDate: '',
+    number: 0
+  })
 
-  static defaultProps = {
-    orderJSON: {},
-    transactionJSON: {},
-    accounts: []
+  const accounts = useAccountInput([])
+  const [validOrders, setValidOrders] = useState<number[]>([])
+  const [invalidOrders, setInvalidOrders] = useState<number[]>([])
+
+  function onTransactionChange(event: React.FormEvent<HTMLInputElement>): void {
+    const value = event.currentTarget.value || ''
+    const transactions = state.transactions
+    transactions[state.currentOrderIndex] = value
+
+    setState({...state, transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
   }
 
-  constructor(props: any) {
-    super(props)
+  function onOrdersChange(event: React.FormEvent<HTMLInputElement>): void {
+    const value = (event.currentTarget.value || '')
+    setState({...state, orderRaw: value})
+  }
 
-    this.state = {
-      orders: [],
-      ordersRaw: [],
-      currentOrderRaw: "",
-      currentOrder: {} as ParsedSwift,
-      orderRaw: "",
-      accounts: [],
-      transactionJSON: {} as ParsedSwift,
-      transactions: [],
-      transactionRaw: "",
-      orderJSON: {} as ParsedSwift,
-      currentOrderIndex: 0,
-      validOrders: [],
-      invalidOrders: [],
-      refDate: '',
-      number: 0
+  function onRefChange(event: React.FormEvent<HTMLInputElement>): void {
+    const value = event.currentTarget.value || ''
+
+    const refDate = value.slice(0, 10)
+    const number = parseFloat(value.slice(10))
+
+    setState({
+      ...state,
+      refDate: refDate,
+      number: number
+    })
+  }
+
+  function generateWizard(): void {
+    try {
+      const orders = state.orderRaw.replace(/ :/g, "\n:").split(/\n{2,}/)
+      setState({
+        ...state,
+        orders: orders.map(parse),
+        ordersRaw: orders,
+        currentOrderRaw: orders[0],
+        currentOrder: parse(orders[0]),
+      })
+    } catch (e) {
+      setState({...state, orders: []})
     }
-
-    this.onAccountChange = onAccountChange.bind(this)
   }
 
-  render() {
-    if(this.state.orders.length === 0) {
-      return this.renderInputPage()
-    } else {
-      return this.renderWizard()
-    }
+  function clearWizard(): void {
+    setState({...state, orders: []})
   }
 
-  renderInputPage() : JSX.Element {
+  function onOrderClick(orderIndex: number) {
+    return ((): void => {
+      return setState({
+        ...state,
+        currentOrderRaw: state.ordersRaw[orderIndex],
+        currentOrder: state.orders[orderIndex],
+        currentOrderIndex: orderIndex,
+        transactionRaw: state.transactions[orderIndex] || "",
+        transactionJSON: parse(state.transactions[orderIndex] || "")
+      })
+    })
+  }
+
+  function markAsValid (orderIndex: number) {
+    return ((): void => {
+      const newInvalidOrders = invalidOrders.filter((order: number) => {return order !== orderIndex})
+      validOrders.push(orderIndex)
+
+      setInvalidOrders(newInvalidOrders)
+      setValidOrders(validOrders)
+    })
+  }
+
+  function markAsInvalid(orderIndex: number) {
+    return ((): void => {
+      const newInvalidOrders = invalidOrders
+      const newValidOrders = validOrders.filter((order: number) => { return order !== orderIndex})
+      newInvalidOrders.push(orderIndex)
+
+      setValidOrders(newValidOrders)
+      setInvalidOrders(newInvalidOrders)
+    })
+  }
+
+  function renderInputPage(): JSX.Element {
     return (
       <Col className="m-1">
         <Row>
           <Col>
             <Form>
               <Form.Group>
-                <Form.Control className="m-1" placeholder="Orders" as="textarea" rows="10" onChange={this.onOrdersChange}/>
-                <Form.Control className="m-1" placeholder="First Reference" as="input" onChange={this.onRefChange}/>
-                <Form.Control className="m-1" placeholder="Accounts" as="textarea" rows="10" onChange={this.onAccountChange}/>
+                <Form.Control className="m-1" placeholder="Orders" as="textarea" rows="10" onChange={onOrdersChange}/>
+                <Form.Control className="m-1" placeholder="First Reference" as="input" onChange={onRefChange}/>
+                <Form.Control className="m-1" placeholder="Accounts" as="textarea" rows="10" onChange={accounts.handleChange}/>
               </Form.Group>
             </Form>
           </Col>
         </Row>
         <Row className="m-1">
-          <Button variant="primary" onClick={this.generateWizard}>Generate</Button>
+          <Button variant="primary" onClick={generateWizard}>Generate</Button>
         </Row>
         <Row className="m-1">
           <Col>
-            <JSONPretty data={this.state.accounts}/>
+            <JSONPretty data={accounts.value}/>
           </Col>
         </Row>
       </Col>
     )
   }
 
-  renderList() : JSX.Element[] {
-    return this.state.orders.map((order: ParsedSwift, index: number) => {
-      try {
-        const buy = findTypes(order, "19", "B", "NETT")[0].ast
-        const sell = findTypes(order, "19", "B", "PSTA")[0].ast
-        const active = index === this.state.currentOrderIndex
-        let variant : "success" | "danger" | undefined
+  function renderList(): JSX.Element[] {
+    return state.orders.map((order: ParsedSwift, index: number) => {
+      const buy = findType(order, "19", "B", "NETT")
+      const sell = findType(order, "19", "B", "PSTA")
+      let buyAST, sellAST, active
+      let variant: "success" | "danger" | undefined
 
-        if (this.state.validOrders.includes(index) && !this.state.invalidOrders.includes(index)) {
+      if (buy && sell) {
+        buyAST = buy.ast
+        sellAST = sell.ast
+        active = index === state.currentOrderIndex
+
+        if (validOrders.includes(index) && invalidOrders.includes(index)) {
           variant = "success"
-        } else if (this.state.invalidOrders.includes(index)) {
+        } else if (invalidOrders.includes(index)) {
           variant = "danger"
         } else {
           variant = undefined
         }
-
+      } else {
         return (
-          <ListGroup.Item as="li" key={index} variant={variant} active={active} action onClick={this.onOrderClick(index)}>
+          <ListGroup.Item as="li" key={index} variant="dark" action onClick={onOrderClick(index)}>
             <Row>
               <Col>
-                <Badge pill variant="light"> {this.state.refDate}<strong>{this.state.number + index + 1}</strong> </Badge>
-              </Col>
-              <Col>
-                {renderCurrency(sell['Amount'], sell['Currency Code'])} / {renderCurrency(buy['Amount'], buy['Currency Code'])}
-              </Col>
-              <Col xs={2}>
-                <Button variant="success" onClick={this.markAsValid(index)}><span aria-label="Valid" role="img">👍</span></Button>
-              </Col>
-              <Col xs={2}>
-                <Button variant="danger" onClick={this.markAsInvalid(index)}><span aria-label="Invalid" role="img">👎</span></Button>
+                Problem with parse
               </Col>
             </Row>
           </ListGroup.Item>
         )
-      } catch (e) {
-       return (
-         <ListGroup.Item as="li" key={index} variant="dark" action onClick={this.onOrderClick(index)}>
-           <Row>
-             <Col>
-               Problem with parse <strong>{e.message}</strong>
-             </Col>
-           </Row>
-         </ListGroup.Item>
-       )
       }
+
+      return (
+        <ListGroup.Item as="li" key={index} variant={variant} active={active} action onClick={onOrderClick(index)}>
+          <Row>
+            <Col>
+              <Badge pill variant="light"> {state.refDate}<strong>{state.number + index + 1}</strong> </Badge>
+            </Col>
+            <Col>
+              {renderCurrency(sellAST['Amount'], sellAST['Currency Code'])} / {renderCurrency(buyAST['Amount'], buyAST['Currency Code'])}
+            </Col>
+            <Col xs={2}>
+              <Button variant="success" onClick={markAsValid(index)}><span aria-label="Valid" role="img">👍</span></Button>
+            </Col>
+            <Col xs={2}>
+              <Button variant="danger" onClick={markAsInvalid(index)}><span aria-label="Invalid" role="img">👎</span></Button>
+            </Col>
+          </Row>
+        </ListGroup.Item>
+      )
     })
   }
-
-  renderWizard() : JSX.Element {
+  function renderWizard(): JSX.Element {
     return (
       <Row className="mt-1 ml-1 mr-1" >
         <Col xs={4}>
           <Col className="m-1">
-            <Button variant="danger" onClick={this.clearWizard}>Clear</Button>
+            <Button variant="danger" onClick={clearWizard}>Clear</Button>
           </Col>
           <Col>
             <ListGroup as="ul">
-              {this.renderList()}
+              {renderList()}
             </ListGroup>
           </Col>
         </Col>
@@ -171,40 +223,40 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
             <Col>
               <Form>
                 <Form.Group>
-                  <Form.Control placeholder="Transaction" as="textarea" rows="10" value={this.state.transactionRaw} onChange={this.onTransactionChange}/>
+                  <Form.Control placeholder="Transaction" as="textarea" rows="10" value={state.transactionRaw} onChange={onTransactionChange}/>
                 </Form.Group>
               </Form>
             </Col>
           </Row>
           <Row>
             <Col>
-              <Validator orderJSON={this.state.currentOrder} transactionJSON={this.state.transactionJSON} accounts={this.state.accounts}/>
+              <Validator orderJSON={state.currentOrder} transactionJSON={state.transactionJSON} accounts={accounts.value}/>
             </Col>
           </Row>
           <Row>
             <Col>
-             <hr/>
+              <hr/>
             </Col>
           </Row>
           <Row>
             <Col xs={6}>
-              <Details parsedSwift={this.state.currentOrder}></Details>
+              <Details parsedSwift={state.currentOrder}/>
             </Col>
             <Col xs={6}>
-              <Details parsedSwift={this.state.transactionJSON}></Details>
+              <Details parsedSwift={state.transactionJSON}/>
             </Col>
           </Row>
           <Row>
             <Col>
-              <SyntaxHighlighter language='javascript' style={solarizedlight}>{this.state.currentOrderRaw}</SyntaxHighlighter>
+              <SyntaxHighlighter language='javascript' style={solarizedlight}>{state.currentOrderRaw}</SyntaxHighlighter>
             </Col>
             <Col>
-              <SyntaxHighlighter language='javascript' style={darcula}>{this.state.transactionRaw}</SyntaxHighlighter>
+              <SyntaxHighlighter language='javascript' style={darcula}>{state.transactionRaw}</SyntaxHighlighter>
             </Col>
           </Row>
           <Row>
             <Col>
-              <SyntaxHighlighter language='javascript' style={duotoneDark}>{this.state.currentOrder.toString()}</SyntaxHighlighter>
+              <SyntaxHighlighter language='javascript' style={duotoneDark}>{state.currentOrder.toString()}</SyntaxHighlighter>
             </Col>
           </Row>
         </Col>
@@ -212,77 +264,10 @@ class ValidatorWizard extends Component<ValidatorWizardProps, ValidatorWizardSta
     )
   }
 
-  onTransactionChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value || ''
-    const transactions = this.state.transactions
-    transactions[this.state.currentOrderIndex] = value
-
-    this.setState({transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
-  }
-
-  onOrdersChange = (event : React.FormEvent<HTMLInputElement>) => {
-    const value = (event.currentTarget.value || '')
-    this.setState({orderRaw: value})
-  }
-
-  generateWizard = () => {
-    try {
-      const orders = this.state.orderRaw.replace(/ :/g, "\n:").split(/\n{2,}/)
-      this.setState({
-        orders: orders.map(parse),
-        ordersRaw: orders,
-        currentOrderRaw: orders[0],
-        currentOrder: parse(orders[0]),
-      })
-    } catch (e) {
-      this.setState({orders: []})
-    }
-  }
-
-  clearWizard = () => {
-    this.setState({orders: []})
-  }
-
-  onOrderClick = (orderIndex: number) => {
-    return (() => {
-      return this.setState({
-        currentOrderRaw: this.state.ordersRaw[orderIndex],
-        currentOrder: this.state.orders[orderIndex],
-        currentOrderIndex: orderIndex,
-        transactionRaw: this.state.transactions[orderIndex] || "",
-        transactionJSON: parse(this.state.transactions[orderIndex] || "")
-      })
-    })
-  }
-
-  markAsValid = (orderIndex: number) => {
-    return (() => {
-      const validOrders = this.state.validOrders
-      const invalidOrders = this.state.invalidOrders.filter((order: any) => { return order !== orderIndex})
-      validOrders.push(orderIndex)
-      return this.setState({ validOrders: validOrders, invalidOrders: invalidOrders })
-    })
-  }
-
-  markAsInvalid = (orderIndex: number) => {
-    return (() => {
-      const invalidOrders = this.state.invalidOrders
-      const validOrders = this.state.validOrders.filter((order: any) => { return order !== orderIndex})
-      invalidOrders.push(orderIndex)
-      return this.setState({ invalidOrders: invalidOrders, validOrders: validOrders })
-    })
-  }
-
-  onRefChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value || ''
-
-    const refDate = value.slice(0, 10)
-    const number = parseFloat(value.slice(10))
-
-    this.setState({
-      refDate: refDate,
-      number: number
-    })
+  if(state.orders.length === 0) {
+    return renderInputPage()
+  } else {
+    return renderWizard()
   }
 }
 

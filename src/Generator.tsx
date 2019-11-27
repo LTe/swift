@@ -1,61 +1,63 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {AccountDetails, Block4, findTypes, getAccountNumberFromFin, onAccountChange, parse, ParsedSwift} from './utils'
+import {AccountDetails, Block4, findTypes, getAccountNumberFromFin, parse, ParsedSwift, useAccountInput} from './utils'
 import moment from 'moment';
 import JSONPretty from 'react-json-pretty'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-interface GeneratorProps {}
-
 interface GeneratorState {
-  accounts: AccountDetails[]
-  templates: ParsedSwift[]
-  orders: ParsedSwift[]
-  transactions: string[]
-  rawTemplates: string[]
-  rawOrders: string[]
+  templates: ParsedSwift[];
+  orders: ParsedSwift[];
+  transactions: string[];
+  rawTemplates: string[];
+  rawOrders: string[];
 }
 
-class Generator extends Component<GeneratorProps, GeneratorState> {
-  private readonly onAccountChange: any;
-
-  constructor(props: any) {
-    super(props)
-
-    this.state = {
-      accounts: [],
+function Generator(): JSX.Element {
+  const [state, setState] = useState<GeneratorState>({
       templates: [],
       orders: [],
       transactions: [],
       rawTemplates: [],
       rawOrders: []
     }
+  )
 
-    this.onAccountChange = onAccountChange.bind(this)
-  }
-  onOrderChange = (event: React.FormEvent<HTMLInputElement>) : void => {
+  const accounts = useAccountInput([])
+
+  function onOrderChange(event: React.FormEvent<HTMLInputElement>): void {
     const orders = (event.currentTarget.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
-    this.setState({orders: orders.map(parse), rawOrders: orders})
+    setState({...state, orders: orders.map(parse), rawOrders: orders})
   }
 
-  onTemplateChange = (event: React.FormEvent<HTMLInputElement>) : void => {
-    const templates =  (event.currentTarget.value || '').split(/\n{2,}/)
-    this.setState({templates: templates.map(parse), rawTemplates: templates})
+  function onTemplateChange(event: React.FormEvent<HTMLInputElement>): void {
+    const templates = (event.currentTarget.value || '').split(/\n{2,}/)
+    setState({...state, templates: templates.map(parse), rawTemplates: templates})
   }
 
-  generateTransaction = (swift: ParsedSwift) => {
+  function generateTradeDate(date: Block4): Block4 {
+    const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
+
+    if (!moment().isAfter(orderValueDate)) {
+      date.ast.Date = moment().format('YYYYMMDD')
+    }
+
+    return date
+  }
+
+  function generateTransaction(swift: ParsedSwift): string {
     try {
       const accountNumber = findTypes(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
-      const matchingAccount = this.state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
+      const matchingAccount = accounts.value.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
-      const matchingTemplateIndex = this.state.templates.findIndex((template: ParsedSwift) => {
+      const matchingTemplateIndex = state.templates.findIndex((template: ParsedSwift) => {
         const fundAccount = findTypes(template, '83', 'J')[0]
         const nostoAccount = findTypes(template, '58', 'J')[0]
         if (!fundAccount && !nostoAccount) { return false }
@@ -66,17 +68,17 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
         return !!(fundAccountNumber === matchingAccount.fund && nostoAccountNumber === matchingAccount.nostro);
       })
 
-      const matchingTemplate = this.state.templates[matchingTemplateIndex]
+      const matchingTemplate = state.templates[matchingTemplateIndex]
 
       if (!matchingTemplate) { return 'There was a problem with generating transaction' }
 
       const valueDate = findTypes(swift,'98', 'A', 'VALU')[0]
-      const tradeDate = this.generateTradeDate(valueDate)
+      const tradeDate = generateTradeDate(valueDate)
       const sellAmount = findTypes(swift, '19', 'B', 'NETT')[0]
       const buyAmount = findTypes(swift, '19', 'B', 'PSTA')[0]
       const rate = findTypes(swift, '92', 'B', 'EXCH')[0]
 
-      let transaction = this.state.rawTemplates[matchingTemplateIndex].slice()
+      let transaction = state.rawTemplates[matchingTemplateIndex].slice()
 
       transaction = transaction.replace(/30V:.*\n/, '30V:' + valueDate.ast.Date + "\n")
       transaction = transaction.replace(/30T:.*\n/, '30T:' + tradeDate.ast.Date + "\n")
@@ -91,22 +93,12 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
     }
   }
 
-  generateTradeDate(date: Block4) : Block4 {
-    const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
+  function renderGeneratedTransactions(): JSX.Element[] {
+    const generateTransactions = state.orders.map(generateTransaction)
 
-    if (!moment().isAfter(orderValueDate)) {
-      date.ast.Date = moment().format('YYYYMMDD')
-    }
-
-    return date
-  }
-
-  renderGeneratedTransactions() : JSX.Element[] {
-    const generateTransactions = this.state.orders.map(this.generateTransaction)
-
-    return this.state.rawOrders.map((order: any, index: any) => {
+    return state.rawOrders.map((order: string, index: number) => {
       return (
-        <Row>
+        <Row key={index}>
           <Col>
             <SyntaxHighlighter language='javascript' style={solarizedlight}>{order}</SyntaxHighlighter>
           </Col>
@@ -118,72 +110,70 @@ class Generator extends Component<GeneratorProps, GeneratorState> {
     })
   }
 
-  render() {
-    return (
-      <Container className="my-2">
-        <Row>
-          <Col>
-            <Form>
-              <Form.Group>
-                <Form.Control placeholder="Orders" as="textarea" rows="5" onChange={this.onOrderChange}/>
-              </Form.Group>
-            </Form>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Form>
-              <Form.Group>
-                <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={this.onAccountChange}/>
-              </Form.Group>
-            </Form>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Form>
-              <Form.Group>
-                <Form.Control placeholder="Templates" as="textarea" rows="5" onChange={this.onTemplateChange}/>
-              </Form.Group>
-            </Form>
-          </Col>
-        </Row>
-        {this.renderGeneratedTransactions()}
-        <Row>
-          <h4>Transactions</h4>
-        </Row>
-        <Row>
-          <Col>
-            <JSONPretty data={this.state.transactions}/>
-          </Col>
-        </Row>
-        <Row>
-          <h4>Orders</h4>
-        </Row>
-        <Row>
-          <Col>
-            <JSONPretty data={this.state.orders}/>
-          </Col>
-        </Row>
-        <Row>
-          <h4>Templates</h4>
-        </Row>
-        <Row>
-          <Col>
-            <JSONPretty data={this.state.templates}/>
-          </Col>
-        </Row>
-        <Row>
-          <h4>Accounts</h4>
-        </Row>
-        <Row>
-          <Col>
-            <JSONPretty data={this.state.accounts}/>
-          </Col>
-        </Row>
-      </Container>
-    )
-  }
+  return (
+    <Container className="my-2">
+      <Row>
+        <Col>
+          <Form>
+            <Form.Group>
+              <Form.Control placeholder="Orders" as="textarea" rows="5" onChange={onOrderChange}/>
+            </Form.Group>
+          </Form>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Form>
+            <Form.Group>
+              <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={accounts.handleChange}/>
+            </Form.Group>
+          </Form>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Form>
+            <Form.Group>
+              <Form.Control placeholder="Templates" as="textarea" rows="5" onChange={onTemplateChange}/>
+            </Form.Group>
+          </Form>
+        </Col>
+      </Row>
+      {renderGeneratedTransactions()}
+      <Row>
+        <h4>Transactions</h4>
+      </Row>
+      <Row>
+        <Col>
+          <JSONPretty data={state.transactions}/>
+        </Col>
+      </Row>
+      <Row>
+        <h4>Orders</h4>
+      </Row>
+      <Row>
+        <Col>
+          <JSONPretty data={state.orders}/>
+        </Col>
+      </Row>
+      <Row>
+        <h4>Templates</h4>
+      </Row>
+      <Row>
+        <Col>
+          <JSONPretty data={state.templates}/>
+        </Col>
+      </Row>
+      <Row>
+        <h4>Accounts</h4>
+      </Row>
+      <Row>
+        <Col>
+          <JSONPretty data={accounts}/>
+        </Col>
+      </Row>
+    </Container>
+  )
 }
 
 export default Generator;
