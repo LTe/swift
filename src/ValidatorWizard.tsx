@@ -10,7 +10,7 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, duotoneDark, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {AccountDetails, findTypes, onAccountChange, parse, ParsedSwift, renderCurrency} from './utils'
+import {findType, parse, ParsedSwift, renderCurrency, useAccountInput} from './utils'
 import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 
@@ -20,14 +20,11 @@ interface ValidatorWizardState {
   currentOrderRaw: string
   currentOrder: ParsedSwift
   orderRaw: string
-  accounts: AccountDetails[]
   transactionJSON: ParsedSwift
   transactions: string[]
   transactionRaw: string
   orderJSON: ParsedSwift
   currentOrderIndex: number
-  validOrders: number[]
-  invalidOrders: number[]
   refDate: string
   number: number
 }
@@ -39,17 +36,18 @@ function ValidatorWizard() : JSX.Element {
       currentOrderRaw: "",
       currentOrder: {} as ParsedSwift,
       orderRaw: "",
-      accounts: [],
       transactionJSON: {} as ParsedSwift,
       transactions: [],
       transactionRaw: "",
       orderJSON: {} as ParsedSwift,
       currentOrderIndex: 0,
-      validOrders: [],
-      invalidOrders: [],
       refDate: '',
       number: 0
   })
+
+  const accounts = useAccountInput([])
+  const [validOrders, setValidOrders] = useState<number[]>([])
+  const [invalidOrders, setInvalidOrders] = useState<number[]>([])
 
   function renderInputPage(): JSX.Element {
     return (
@@ -60,7 +58,7 @@ function ValidatorWizard() : JSX.Element {
               <Form.Group>
                 <Form.Control className="m-1" placeholder="Orders" as="textarea" rows="10" onChange={onOrdersChange}/>
                 <Form.Control className="m-1" placeholder="First Reference" as="input" onChange={onRefChange}/>
-                <Form.Control className="m-1" placeholder="Accounts" as="textarea" rows="10" onChange={onAccountChange}/>
+                <Form.Control className="m-1" placeholder="Accounts" as="textarea" rows="10" onChange={accounts.handleChange}/>
               </Form.Group>
             </Form>
           </Col>
@@ -70,7 +68,7 @@ function ValidatorWizard() : JSX.Element {
         </Row>
         <Row className="m-1">
           <Col>
-            <JSONPretty data={state.accounts}/>
+            <JSONPretty data={accounts.value}/>
           </Col>
         </Row>
       </Col>
@@ -80,14 +78,15 @@ function ValidatorWizard() : JSX.Element {
   function renderList() : JSX.Element[] {
     return state.orders.map((order: ParsedSwift, index: number) => {
       try {
-        const buy = findTypes(order, "19", "B", "NETT")[0].ast
-        const sell = findTypes(order, "19", "B", "PSTA")[0].ast
+        const buy = findType(order, "19", "B", "NETT")!.ast
+        const sell = findType(order, "19", "B", "PSTA")!.ast
         const active = index === state.currentOrderIndex
         let variant : "success" | "danger" | undefined
 
-        if (state.validOrders.includes(index) && !state.invalidOrders.includes(index)) {
+
+        if (validOrders.includes(index) && invalidOrders.includes(index)) {
           variant = "success"
-        } else if (state.invalidOrders.includes(index)) {
+        } else if (invalidOrders.includes(index)) {
           variant = "danger"
         } else {
           variant = undefined
@@ -150,7 +149,7 @@ function ValidatorWizard() : JSX.Element {
           </Row>
           <Row>
             <Col>
-              <Validator orderJSON={state.currentOrder} transactionJSON={state.transactionJSON} accounts={state.accounts}/>
+              <Validator orderJSON={state.currentOrder} transactionJSON={state.transactionJSON} accounts={accounts.value}/>
             </Col>
           </Row>
           <Row>
@@ -231,19 +230,22 @@ function ValidatorWizard() : JSX.Element {
 
   function markAsValid (orderIndex: number) {
     return (() => {
-      const validOrders = state.validOrders
-      const invalidOrders = state.invalidOrders.filter((order: any) => { return order !== orderIndex})
+      const newInvalidOrders = invalidOrders.filter((order: number) => {return order !== orderIndex})
       validOrders.push(orderIndex)
-      return setState({...state, validOrders: validOrders, invalidOrders: invalidOrders })
+
+      setInvalidOrders(newInvalidOrders)
+      setValidOrders(validOrders)
     })
   }
 
   function markAsInvalid(orderIndex: number) {
     return (() => {
-      const invalidOrders = state.invalidOrders
-      const validOrders = state.validOrders.filter((order: any) => { return order !== orderIndex})
-      invalidOrders.push(orderIndex)
-      return setState({...state, invalidOrders: invalidOrders, validOrders: validOrders })
+      const newInvalidOrders = invalidOrders
+      const newValidOrders = validOrders.filter((order: any) => { return order !== orderIndex})
+      newInvalidOrders.push(orderIndex)
+
+      setValidOrders(newValidOrders)
+      setInvalidOrders(newInvalidOrders)
     })
   }
 

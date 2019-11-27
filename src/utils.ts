@@ -1,11 +1,13 @@
 import patterns from "./metadata/patterns.json"
-import React, {Component} from 'react'
+import React, {useState} from 'react'
 import SwiftParser from 'swift-mock/lib/swiftParser'
 import moment from 'moment'
 import 'moment/locale/pl'
 
 let FALLBACK_FORMAT = "F01TESTBIC12XXX0360105154\nO5641057130214TESTBIC34XXX26264938281302141757N\n108:2RDRQDHM3WO"
 let parser = new SwiftParser(JSON.stringify(patterns))
+
+type EventHandler = (event: React.FormEvent<HTMLInputElement>) => void
 
 export interface ParsedSwift {
   block1: Block1
@@ -84,11 +86,25 @@ export interface AccountDetails {
   nostro: string
 }
 
-export function onAccountChange(this: Component, event: React.ChangeEvent<HTMLInputElement>) {
-  const value = event.target.value
-  const accounts  = parseAccounts(value)
+export interface AccountHook {
+  value: AccountDetails[],
+  handleChange: EventHandler
+}
 
-  this.setState({accounts: accounts})
+export function useAccountInput(initialState: AccountDetails[]): AccountHook {
+  const [accounts, setAccounts] = useState<AccountDetails[]>(initialState)
+
+  function handleChange(event: React.FormEvent<HTMLInputElement>) {
+    const value = event.currentTarget.value
+    const accounts = parseAccounts(value)
+
+    setAccounts(accounts)
+  }
+
+  return {
+    value: accounts,
+    handleChange
+  }
 }
 
 export function parseAccounts(value: string) : AccountDetails[] {

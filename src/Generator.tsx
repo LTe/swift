@@ -4,14 +4,13 @@ import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {AccountDetails, Block4, findTypes, getAccountNumberFromFin, parse, parseAccounts, ParsedSwift} from './utils'
+import {AccountDetails, Block4, findTypes, getAccountNumberFromFin, parse, ParsedSwift, useAccountInput} from './utils'
 import moment from 'moment';
 import JSONPretty from 'react-json-pretty'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface GeneratorState {
-  accounts: AccountDetails[]
   templates: ParsedSwift[]
   orders: ParsedSwift[]
   transactions: string[]
@@ -20,8 +19,7 @@ interface GeneratorState {
 }
 
 function Generator() : JSX.Element {
-  let [state, setState] = useState<GeneratorState>({
-      accounts: [],
+  const [state, setState] = useState<GeneratorState>({
       templates: [],
       orders: [],
       transactions: [],
@@ -29,6 +27,8 @@ function Generator() : JSX.Element {
       rawOrders: []
     }
   )
+
+  const accounts = useAccountInput([])
 
   function onOrderChange(event: React.FormEvent<HTMLInputElement>): void {
     const orders = (event.currentTarget.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
@@ -40,15 +40,10 @@ function Generator() : JSX.Element {
     setState({...state, templates: templates.map(parse), rawTemplates: templates})
   }
 
-  function onAccountChange(event: React.FormEvent<HTMLInputElement>): void {
-    const accounts = parseAccounts((event.currentTarget.value || ''))
-    setState({...state, accounts: accounts})
-  }
-
   function generateTransaction(swift: ParsedSwift): string {
     try {
       const accountNumber = findTypes(swift, '97', 'A', 'SAFE')[0].ast['Account Number'] || ''
-      const matchingAccount = state.accounts.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
+      const matchingAccount = accounts.value.find((mapping: AccountDetails) => { return accountNumber.includes(mapping.account) })
 
       if (!matchingAccount) { return 'There was a problem with matching accounts' }
 
@@ -130,7 +125,7 @@ function Generator() : JSX.Element {
         <Col>
           <Form>
             <Form.Group>
-              <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={onAccountChange}/>
+              <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={accounts.handleChange}/>
             </Form.Group>
           </Form>
         </Col>
@@ -174,7 +169,7 @@ function Generator() : JSX.Element {
       </Row>
       <Row>
         <Col>
-          <JSONPretty data={state.accounts}/>
+          <JSONPretty data={accounts}/>
         </Col>
       </Row>
     </Container>

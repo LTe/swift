@@ -82,7 +82,7 @@ function badge(isDuplicate: boolean) : JSX.Element {
     <Badge pill variant="success"> Is not duplicate </Badge>)
 }
 
-function duplicateCheck(event: React.FormEvent<HTMLInputElement>) {
+function duplicateCheck(event: React.FormEvent<HTMLInputElement>): DuplicateProps {
   const swifts = (event.currentTarget.value || '').split(/\n{2,}/)
   const mappedSwifts = swifts.map(parse)
   const duplicatedOrders = mappedSwifts.filter((order: ParsedSwift) => {

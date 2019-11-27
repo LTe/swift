@@ -7,12 +7,11 @@ import JSONPretty from 'react-json-pretty'
 import Details from './Details'
 import './assets/css/App.css'
 import Validator from "./Validator"
-import {AccountDetails, onAccountChange, parse, ParsedSwift} from './utils'
+import {parse, ParsedSwift, useAccountInput} from './utils'
 
 interface ValidatorInputState {
   orderJSON: ParsedSwift
   transactionJSON: ParsedSwift
-  accounts: AccountDetails[]
   mappedSwifts: ParsedSwift[]
 }
 
@@ -20,9 +19,10 @@ function ValidatorInput() {
   const [state, setState] = useState<ValidatorInputState>({
     orderJSON: {} as ParsedSwift,
     transactionJSON: {} as ParsedSwift,
-    accounts: [],
     mappedSwifts: []
   })
+
+  const accounts = useAccountInput([])
 
   function onOrderChange(event: React.FormEvent<HTMLInputElement>) {
     const value = event.currentTarget.value || ''
@@ -56,7 +56,7 @@ function ValidatorInput() {
       <Row>
         <Col xs={12}>
           <Validator orderJSON={state.orderJSON} transactionJSON={state.transactionJSON}
-                     accounts={state.accounts}/>
+                     accounts={accounts.value}/>
         </Col>
       </Row>
       <hr className="col-xs-12"/>
@@ -80,14 +80,14 @@ function ValidatorInput() {
         <Col>
           <Form>
             <Form.Group controlId="exampleForm.ControlTextarea1">
-              <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={onAccountChange}/>
+              <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={accounts.handleChange}/>
             </Form.Group>
           </Form>
         </Col>
       </Row>
       <Row>
         <Col>
-          <JSONPretty data={state.accounts}/>
+          <JSONPretty data={accounts}/>
         </Col>
       </Row>
     </Container>
