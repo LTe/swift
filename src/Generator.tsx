@@ -4,15 +4,7 @@ import Row from 'react-bootstrap/Row';
 import 'moment/locale/pl';
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
-import {
-  AccountDetails,
-  Block4,
-  findTypes,
-  getAccountNumberFromFin,
-  parse,
-  parseAccounts,
-  ParsedSwift
-} from './utils'
+import {AccountDetails, Block4, findTypes, getAccountNumberFromFin, parse, parseAccounts, ParsedSwift} from './utils'
 import moment from 'moment';
 import JSONPretty from 'react-json-pretty'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
