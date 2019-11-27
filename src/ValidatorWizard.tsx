@@ -15,39 +15,118 @@ import JSONPretty from 'react-json-pretty'
 import Badge from "react-bootstrap/Badge";
 
 interface ValidatorWizardState {
-  orders: ParsedSwift[]
-  ordersRaw: string[]
-  currentOrderRaw: string
-  currentOrder: ParsedSwift
-  orderRaw: string
-  transactionJSON: ParsedSwift
-  transactions: string[]
-  transactionRaw: string
-  orderJSON: ParsedSwift
-  currentOrderIndex: number
-  refDate: string
-  number: number
+  orders: ParsedSwift[];
+  ordersRaw: string[];
+  currentOrderRaw: string;
+  currentOrder: ParsedSwift;
+  orderRaw: string;
+  transactionJSON: ParsedSwift;
+  transactions: string[];
+  transactionRaw: string;
+  orderJSON: ParsedSwift;
+  currentOrderIndex: number;
+  refDate: string;
+  number: number;
 }
 
-function ValidatorWizard() : JSX.Element {
+function ValidatorWizard(): JSX.Element {
   const [state, setState] = useState<ValidatorWizardState>({
-      orders: [],
-      ordersRaw: [],
-      currentOrderRaw: "",
-      currentOrder: {} as ParsedSwift,
-      orderRaw: "",
-      transactionJSON: {} as ParsedSwift,
-      transactions: [],
-      transactionRaw: "",
-      orderJSON: {} as ParsedSwift,
-      currentOrderIndex: 0,
-      refDate: '',
-      number: 0
+    orders: [],
+    ordersRaw: [],
+    currentOrderRaw: "",
+    currentOrder: {} as ParsedSwift,
+    orderRaw: "",
+    transactionJSON: {} as ParsedSwift,
+    transactions: [],
+    transactionRaw: "",
+    orderJSON: {} as ParsedSwift,
+    currentOrderIndex: 0,
+    refDate: '',
+    number: 0
   })
 
   const accounts = useAccountInput([])
   const [validOrders, setValidOrders] = useState<number[]>([])
   const [invalidOrders, setInvalidOrders] = useState<number[]>([])
+
+  function onTransactionChange(event: React.FormEvent<HTMLInputElement>): void {
+    const value = event.currentTarget.value || ''
+    const transactions = state.transactions
+    transactions[state.currentOrderIndex] = value
+
+    setState({...state, transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
+  }
+
+  function onOrdersChange(event: React.FormEvent<HTMLInputElement>): void {
+    const value = (event.currentTarget.value || '')
+    setState({...state, orderRaw: value})
+  }
+
+  function onRefChange(event: React.FormEvent<HTMLInputElement>): void {
+    const value = event.currentTarget.value || ''
+
+    const refDate = value.slice(0, 10)
+    const number = parseFloat(value.slice(10))
+
+    setState({
+      ...state,
+      refDate: refDate,
+      number: number
+    })
+  }
+
+  function generateWizard(): void {
+    try {
+      const orders = state.orderRaw.replace(/ :/g, "\n:").split(/\n{2,}/)
+      setState({
+        ...state,
+        orders: orders.map(parse),
+        ordersRaw: orders,
+        currentOrderRaw: orders[0],
+        currentOrder: parse(orders[0]),
+      })
+    } catch (e) {
+      setState({...state, orders: []})
+    }
+  }
+
+  function clearWizard(): void {
+    setState({...state, orders: []})
+  }
+
+  function onOrderClick(orderIndex: number) {
+    return ((): void => {
+      return setState({
+        ...state,
+        currentOrderRaw: state.ordersRaw[orderIndex],
+        currentOrder: state.orders[orderIndex],
+        currentOrderIndex: orderIndex,
+        transactionRaw: state.transactions[orderIndex] || "",
+        transactionJSON: parse(state.transactions[orderIndex] || "")
+      })
+    })
+  }
+
+  function markAsValid (orderIndex: number) {
+    return ((): void => {
+      const newInvalidOrders = invalidOrders.filter((order: number) => {return order !== orderIndex})
+      validOrders.push(orderIndex)
+
+      setInvalidOrders(newInvalidOrders)
+      setValidOrders(validOrders)
+    })
+  }
+
+  function markAsInvalid(orderIndex: number) {
+    return ((): void => {
+      const newInvalidOrders = invalidOrders
+      const newValidOrders = validOrders.filter((order: number) => { return order !== orderIndex})
+      newInvalidOrders.push(orderIndex)
+
+      setValidOrders(newValidOrders)
+      setInvalidOrders(newInvalidOrders)
+    })
+  }
 
   function renderInputPage(): JSX.Element {
     return (
@@ -75,14 +154,17 @@ function ValidatorWizard() : JSX.Element {
     )
   }
 
-  function renderList() : JSX.Element[] {
+  function renderList(): JSX.Element[] {
     return state.orders.map((order: ParsedSwift, index: number) => {
-      try {
-        const buy = findType(order, "19", "B", "NETT")!.ast
-        const sell = findType(order, "19", "B", "PSTA")!.ast
-        const active = index === state.currentOrderIndex
-        let variant : "success" | "danger" | undefined
+      const buy = findType(order, "19", "B", "NETT")
+      const sell = findType(order, "19", "B", "PSTA")
+      let buyAST, sellAST, active
+      let variant: "success" | "danger" | undefined
 
+      if (buy && sell) {
+        buyAST = buy.ast
+        sellAST = sell.ast
+        active = index === state.currentOrderIndex
 
         if (validOrders.includes(index) && invalidOrders.includes(index)) {
           variant = "success"
@@ -91,40 +173,39 @@ function ValidatorWizard() : JSX.Element {
         } else {
           variant = undefined
         }
-
-        return (
-          <ListGroup.Item as="li" key={index} variant={variant} active={active} action onClick={onOrderClick(index)}>
-            <Row>
-              <Col>
-                <Badge pill variant="light"> {state.refDate}<strong>{state.number + index + 1}</strong> </Badge>
-              </Col>
-              <Col>
-                {renderCurrency(sell['Amount'], sell['Currency Code'])} / {renderCurrency(buy['Amount'], buy['Currency Code'])}
-              </Col>
-              <Col xs={2}>
-                <Button variant="success" onClick={markAsValid(index)}><span aria-label="Valid" role="img">👍</span></Button>
-              </Col>
-              <Col xs={2}>
-                <Button variant="danger" onClick={markAsInvalid(index)}><span aria-label="Invalid" role="img">👎</span></Button>
-              </Col>
-            </Row>
-          </ListGroup.Item>
-        )
-      } catch (e) {
+      } else {
         return (
           <ListGroup.Item as="li" key={index} variant="dark" action onClick={onOrderClick(index)}>
             <Row>
               <Col>
-                Problem with parse <strong>{e.message}</strong>
+                Problem with parse
               </Col>
             </Row>
           </ListGroup.Item>
         )
       }
+
+      return (
+        <ListGroup.Item as="li" key={index} variant={variant} active={active} action onClick={onOrderClick(index)}>
+          <Row>
+            <Col>
+              <Badge pill variant="light"> {state.refDate}<strong>{state.number + index + 1}</strong> </Badge>
+            </Col>
+            <Col>
+              {renderCurrency(sellAST['Amount'], sellAST['Currency Code'])} / {renderCurrency(buyAST['Amount'], buyAST['Currency Code'])}
+            </Col>
+            <Col xs={2}>
+              <Button variant="success" onClick={markAsValid(index)}><span aria-label="Valid" role="img">👍</span></Button>
+            </Col>
+            <Col xs={2}>
+              <Button variant="danger" onClick={markAsInvalid(index)}><span aria-label="Invalid" role="img">👎</span></Button>
+            </Col>
+          </Row>
+        </ListGroup.Item>
+      )
     })
   }
-
-  function renderWizard() : JSX.Element {
+  function renderWizard(): JSX.Element {
     return (
       <Row className="mt-1 ml-1 mr-1" >
         <Col xs={4}>
@@ -181,85 +262,6 @@ function ValidatorWizard() : JSX.Element {
         </Col>
       </Row>
     )
-  }
-
-  function onTransactionChange(event: React.FormEvent<HTMLInputElement>) {
-    const value = event.currentTarget.value || ''
-    const transactions = state.transactions
-    transactions[state.currentOrderIndex] = value
-
-    setState({...state, transactionJSON: parse(value), transactionRaw: value, transactions: transactions})
-  }
-
-  function onOrdersChange(event : React.FormEvent<HTMLInputElement>) {
-    const value = (event.currentTarget.value || '')
-    setState({...state, orderRaw: value})
-  }
-
-  function generateWizard() {
-    try {
-      const orders = state.orderRaw.replace(/ :/g, "\n:").split(/\n{2,}/)
-      setState({
-        ...state,
-        orders: orders.map(parse),
-        ordersRaw: orders,
-        currentOrderRaw: orders[0],
-        currentOrder: parse(orders[0]),
-      })
-    } catch (e) {
-      setState({...state, orders: []})
-    }
-  }
-
-  function clearWizard() {
-    setState({...state, orders: []})
-  }
-
-  function onOrderClick(orderIndex: number) {
-    return (() => {
-      return setState({
-        ...state,
-        currentOrderRaw: state.ordersRaw[orderIndex],
-        currentOrder: state.orders[orderIndex],
-        currentOrderIndex: orderIndex,
-        transactionRaw: state.transactions[orderIndex] || "",
-        transactionJSON: parse(state.transactions[orderIndex] || "")
-      })
-    })
-  }
-
-  function markAsValid (orderIndex: number) {
-    return (() => {
-      const newInvalidOrders = invalidOrders.filter((order: number) => {return order !== orderIndex})
-      validOrders.push(orderIndex)
-
-      setInvalidOrders(newInvalidOrders)
-      setValidOrders(validOrders)
-    })
-  }
-
-  function markAsInvalid(orderIndex: number) {
-    return (() => {
-      const newInvalidOrders = invalidOrders
-      const newValidOrders = validOrders.filter((order: any) => { return order !== orderIndex})
-      newInvalidOrders.push(orderIndex)
-
-      setValidOrders(newValidOrders)
-      setInvalidOrders(newInvalidOrders)
-    })
-  }
-
-  function onRefChange(event: React.FormEvent<HTMLInputElement>) {
-    const value = event.currentTarget.value || ''
-
-    const refDate = value.slice(0, 10)
-    const number = parseFloat(value.slice(10))
-
-    setState({
-      ...state,
-      refDate: refDate,
-      number: number
-    })
   }
 
   if(state.orders.length === 0) {

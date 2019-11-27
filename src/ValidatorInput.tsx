@@ -10,12 +10,12 @@ import Validator from "./Validator"
 import {parse, ParsedSwift, useAccountInput} from './utils'
 
 interface ValidatorInputState {
-  orderJSON: ParsedSwift
-  transactionJSON: ParsedSwift
-  mappedSwifts: ParsedSwift[]
+  orderJSON: ParsedSwift;
+  transactionJSON: ParsedSwift;
+  mappedSwifts: ParsedSwift[];
 }
 
-function ValidatorInput() {
+function ValidatorInput(): JSX.Element {
   const [state, setState] = useState<ValidatorInputState>({
     orderJSON: {} as ParsedSwift,
     transactionJSON: {} as ParsedSwift,
@@ -24,12 +24,12 @@ function ValidatorInput() {
 
   const accounts = useAccountInput([])
 
-  function onOrderChange(event: React.FormEvent<HTMLInputElement>) {
+  function onOrderChange(event: React.FormEvent<HTMLInputElement>): void {
     const value = event.currentTarget.value || ''
     setState({...state, orderJSON: parse(value)})
   }
 
-  function onTransactionChange(event: React.FormEvent<HTMLInputElement>) {
+  function onTransactionChange(event: React.FormEvent<HTMLInputElement>): void {
     const value = event.currentTarget.value || ''
     setState({...state, transactionJSON: parse(value)})
   }

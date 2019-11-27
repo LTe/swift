@@ -9,7 +9,7 @@ import Generator from "./Generator";
 import ValidatorWizard from "./ValidatorWizard"
 import ValidatorInput from "./ValidatorInput";
 
-function App() {
+function App(): JSX.Element {
   return (
     <div>
       <Navbar bg="dark" variant="dark" className="mb-2">

@@ -2,6 +2,7 @@ language: node_js
 
 script:
   - npm test
+  - npx eslint src/*.ts*
   - npm run build
 
 deploy:

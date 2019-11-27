@@ -11,14 +11,14 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
 import {darcula, solarizedlight} from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface GeneratorState {
-  templates: ParsedSwift[]
-  orders: ParsedSwift[]
-  transactions: string[]
-  rawTemplates: string[]
-  rawOrders: string[]
+  templates: ParsedSwift[];
+  orders: ParsedSwift[];
+  transactions: string[];
+  rawTemplates: string[];
+  rawOrders: string[];
 }
 
-function Generator() : JSX.Element {
+function Generator(): JSX.Element {
   const [state, setState] = useState<GeneratorState>({
       templates: [],
       orders: [],
@@ -38,6 +38,16 @@ function Generator() : JSX.Element {
   function onTemplateChange(event: React.FormEvent<HTMLInputElement>): void {
     const templates = (event.currentTarget.value || '').split(/\n{2,}/)
     setState({...state, templates: templates.map(parse), rawTemplates: templates})
+  }
+
+  function generateTradeDate(date: Block4): Block4 {
+    const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
+
+    if (!moment().isAfter(orderValueDate)) {
+      date.ast.Date = moment().format('YYYYMMDD')
+    }
+
+    return date
   }
 
   function generateTransaction(swift: ParsedSwift): string {
@@ -83,22 +93,12 @@ function Generator() : JSX.Element {
     }
   }
 
-  function generateTradeDate(date: Block4) : Block4 {
-    const orderValueDate = moment(date.ast.Date, "YYYYMMDD")
-
-    if (!moment().isAfter(orderValueDate)) {
-      date.ast.Date = moment().format('YYYYMMDD')
-    }
-
-    return date
-  }
-
-  function renderGeneratedTransactions() : JSX.Element[] {
+  function renderGeneratedTransactions(): JSX.Element[] {
     const generateTransactions = state.orders.map(generateTransaction)
 
     return state.rawOrders.map((order: string, index: number) => {
       return (
-        <Row>
+        <Row key={index}>
           <Col>
             <SyntaxHighlighter language='javascript' style={solarizedlight}>{order}</SyntaxHighlighter>
           </Col>
