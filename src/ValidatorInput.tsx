@@ -1,13 +1,13 @@
-import React, {useState} from 'react'
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
-import Form from 'react-bootstrap/Form'
-import JSONPretty from 'react-json-pretty'
-import Details from './Details'
-import './assets/css/App.css'
-import Validator from "./Validator"
-import {parse, ParsedSwift, useAccountInput} from './utils'
+import React, { useState } from "react";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Form from "react-bootstrap/Form";
+import JSONPretty from "react-json-pretty";
+import Details from "./Details";
+import "./assets/css/App.css";
+import Validator from "./Validator";
+import { parse, ParsedSwift, useAccountInput } from "./utils";
 
 interface ValidatorInputState {
   orderJSON: ParsedSwift;
@@ -20,18 +20,18 @@ function ValidatorInput(): JSX.Element {
     orderJSON: {} as ParsedSwift,
     transactionJSON: {} as ParsedSwift,
     mappedSwifts: []
-  })
+  });
 
-  const accounts = useAccountInput([])
+  const accounts = useAccountInput([]);
 
   function onOrderChange(event: React.FormEvent<HTMLInputElement>): void {
-    const value = event.currentTarget.value || ''
-    setState({...state, orderJSON: parse(value)})
+    const value = event.currentTarget.value || "";
+    setState({ ...state, orderJSON: parse(value) });
   }
 
   function onTransactionChange(event: React.FormEvent<HTMLInputElement>): void {
-    const value = event.currentTarget.value || ''
-    setState({...state, transactionJSON: parse(value)})
+    const value = event.currentTarget.value || "";
+    setState({ ...state, transactionJSON: parse(value) });
   }
 
   return (
@@ -40,58 +40,75 @@ function ValidatorInput(): JSX.Element {
         <Col>
           <Form>
             <Form.Group controlId="exampleForm.ControlTextarea1">
-              <Form.Control placeholder="Swift order" as="textarea" rows="20" onChange={onOrderChange}/>
+              <Form.Control
+                placeholder="Swift order"
+                as="textarea"
+                rows="20"
+                onChange={onOrderChange}
+              />
             </Form.Group>
           </Form>
         </Col>
         <Col>
           <Form>
             <Form.Group controlId="exampleForm.ControlTextarea1">
-              <Form.Control placeholder="Swift transaction" as="textarea" rows="20"
-                            onChange={onTransactionChange}/>
+              <Form.Control
+                placeholder="Swift transaction"
+                as="textarea"
+                rows="20"
+                onChange={onTransactionChange}
+              />
             </Form.Group>
           </Form>
         </Col>
       </Row>
       <Row>
         <Col xs={12}>
-          <Validator orderJSON={state.orderJSON} transactionJSON={state.transactionJSON}
-                     accounts={accounts.value}/>
+          <Validator
+            orderJSON={state.orderJSON}
+            transactionJSON={state.transactionJSON}
+            accounts={accounts.value}
+          />
         </Col>
       </Row>
-      <hr className="col-xs-12"/>
+      <hr className="col-xs-12" />
       <Row>
         <Col xs={6}>
-          <Details parsedSwift={state.orderJSON}/>
+          <Details parsedSwift={state.orderJSON} />
         </Col>
         <Col xs={6}>
-          <Details parsedSwift={state.transactionJSON}/>
+          <Details parsedSwift={state.transactionJSON} />
         </Col>
       </Row>
       <Row>
         <Col xs={6}>
-          <JSONPretty data={state.orderJSON}/>
+          <JSONPretty data={state.orderJSON} />
         </Col>
         <Col xs={6}>
-          <JSONPretty data={state.transactionJSON}/>
+          <JSONPretty data={state.transactionJSON} />
         </Col>
       </Row>
       <Row>
         <Col>
           <Form>
             <Form.Group controlId="exampleForm.ControlTextarea1">
-              <Form.Control placeholder="Accounts" as="textarea" rows="5" onChange={accounts.handleChange}/>
+              <Form.Control
+                placeholder="Accounts"
+                as="textarea"
+                rows="5"
+                onChange={accounts.handleChange}
+              />
             </Form.Group>
           </Form>
         </Col>
       </Row>
       <Row>
         <Col>
-          <JSONPretty data={accounts}/>
+          <JSONPretty data={accounts} />
         </Col>
       </Row>
     </Container>
-  )
+  );
 }
 
-export default ValidatorInput
+export default ValidatorInput;
