@@ -104,7 +104,8 @@ export function useAccountInput(initialState: AccountDetails[]): AccountHook {
   const [accounts, setAccounts] = useState<AccountDetails[]>(initialState)
 
   function handleChange(event: React.FormEvent<HTMLInputElement>): void {
-    const value = event.currentTarget.value
+    const target = event.target as HTMLInputElement
+    const value = target.value
     const accounts = parseAccounts(value)
 
     setAccounts(accounts)

@@ -49,7 +49,7 @@ function renderDetails(mappedSwifts: ParsedSwift[]): JSX.Element {
 
 function renderRow(valueDate: Block4, exoticCurr: Block4, usdCurr: Block4, index: number): JSX.Element {
   return (
-    <tr key={index}>
+    <tr className="singleDuplicate" key={index}>
       <td>{valueDate.ast.Date}</td>
       <td>{exoticCurr.ast.Amount} {exoticCurr.ast["Currency Code"]}</td>
       <td>{usdCurr.ast.Amount} {usdCurr.ast["Currency Code"]}</td>
@@ -82,8 +82,9 @@ function badge(isDuplicate: boolean): JSX.Element {
     <Badge pill variant="success"> Is not duplicate </Badge>)
 }
 
-function duplicateCheck(event: React.FormEvent<HTMLInputElement>): DuplicateProps {
-  const swifts = (event.currentTarget.value || '').split(/\n{2,}/)
+async function duplicateCheck(event: React.FormEvent<HTMLInputElement>): Promise<DuplicateProps> {
+  const target = event.target as HTMLInputElement
+  const swifts = (target.value || '').split(/\n{2,}/)
   const mappedSwifts = swifts.map(parse)
   const duplicatedOrders = mappedSwifts.filter((order: ParsedSwift) => {
     return mappedSwifts.filter(
@@ -114,7 +115,7 @@ function Duplicate(props: DuplicateProps): JSX.Element {
             <th>USD amount</th>
           </tr>
           </thead>
-          <tbody>{renderDuplicateDetails(props.duplicateValues)}</tbody>
+          <tbody className="duplicatesList">{renderDuplicateDetails(props.duplicateValues)}</tbody>
         </Table>
       </Row>
       <Row><h4>All swifts</h4></Row>
@@ -133,7 +134,9 @@ export function DuplicateCheck(): JSX.Element {
   })
 
   function updateDuplicates(event: React.FormEvent<HTMLInputElement>): void {
-    setState(duplicateCheck(event))
+    duplicateCheck(event).then(result => {
+      setState(result)
+    })
   }
 
   return (
@@ -142,7 +145,7 @@ export function DuplicateCheck(): JSX.Element {
         <Col>
           <Form>
             <Form.Group controlId="exampleForm.ControlTextarea1">
-              <Form.Control placeholder="Orders list" as="textarea" rows="10" onChange={updateDuplicates}/>
+              <Form.Control className="ordersList" placeholder="Orders list" as="textarea" rows="10" onChange={updateDuplicates}/>
             </Form.Group>
           </Form>
         </Col>

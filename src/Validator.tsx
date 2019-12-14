@@ -1,6 +1,7 @@
 import React from 'react';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import Container from 'react-bootstrap/Container';
 import Badge from 'react-bootstrap/Badge';
 import moment, {Moment} from 'moment';
 import 'moment/locale/pl';
@@ -20,13 +21,15 @@ function Validator(props: ValidatorProps): JSX.Element {
     const badgeVariant = valid ? 'success' : 'danger'
 
     return (
-      <React.Fragment>
-        <Col className="justify-content-center" xs={4}>{valueLeft}</Col>
-        <Col className="justify-content-center" xs={4}>
-          <Badge variant={badgeVariant}>{label}</Badge>
-        </Col>
-        <Col className="justify-content-center" xs={4}>{valueRight}</Col>
-      </React.Fragment>
+      <Container>
+        <Row data-label={label}>
+          <Col className="order" xs={4}>{valueLeft}</Col>
+          <Col xs={4}>
+            <Badge variant={badgeVariant}>{label}</Badge>
+          </Col>
+          <Col className="transaction" xs={4}>{valueRight}</Col>
+        </Row>
+      </Container>
     )
   }
 
@@ -42,23 +45,22 @@ function Validator(props: ValidatorProps): JSX.Element {
     return date.format('DD/MM/YYYY') + " (" + date.fromNow() + ")"
   }
 
-
   function renderAmountValidator(orderValue: SwiftAST, transactionValue: SwiftAST, label: string): JSX.Element {
     const validation = renderFloat(orderValue['Amount']) === renderFloat(transactionValue['Amount']) && orderValue['Currency Code'] === transactionValue['Currency']
     return renderType(label, renderCurrency(orderValue), renderCurrency(transactionValue), validation)
   }
 
-  function validateAccount(account: Block4, orderAccount: Block4, label: string): JSX.Element {
+  function validateAccount(account: Block4, orderAccount: Block4, matchType: 'nostro' | 'fund', label: string): JSX.Element {
     const accountNumber = getAccountNumberFromFin(account.ast)
     const orderAccountNumber = orderAccount.ast['Account Number'] || 'Unknown account'
 
-    const matchingAccount = props.accounts.find((mapping: AccountDetails) => {
+    const matchingAccount: AccountDetails = props.accounts.find((mapping: AccountDetails) => {
       return orderAccountNumber.includes(mapping.account)
-    }) || {fund: 'Unknown number'}
+    }) || {account: 'Unknown number', fund: 'Unknown number', nostro: 'Unknown number'}
 
-    const validation = matchingAccount.fund === accountNumber
+    const validation: boolean = matchingAccount[matchType] === accountNumber
 
-    return renderType(label, orderAccountNumber, matchingAccount.fund, validation)
+    return renderType(label, orderAccountNumber, matchingAccount[matchType], validation)
   }
 
   function validateFundAccount(): JSX.Element | null {
@@ -66,7 +68,7 @@ function Validator(props: ValidatorProps): JSX.Element {
     const fundAccount = findType(props.transactionJSON, '83', 'J')
 
     if (orderAccount && fundAccount) {
-      return validateAccount(fundAccount, orderAccount, 'Fund Account Number')
+      return validateAccount(fundAccount, orderAccount, 'fund', 'Fund Account Number')
     } else {
       return null
     }
@@ -77,7 +79,7 @@ function Validator(props: ValidatorProps): JSX.Element {
     const nostroAccount = findType(props.transactionJSON, '58', 'J')
 
     if (orderAccount && nostroAccount) {
-      return validateAccount(nostroAccount, nostroAccount, 'Fund Account Number')
+      return validateAccount(nostroAccount, orderAccount, 'nostro', 'Nostro Account Number')
     } else {
       return null
     }
@@ -91,8 +93,8 @@ function Validator(props: ValidatorProps): JSX.Element {
 
     if(!rateRaw || !buyRaw || !sellRaw || !orderRateRaw) { return }
 
-    const buy = (buyRaw.ast['Amount'] || 0) as number
-    const sell = (sellRaw.ast['Amount'] || 1) as number
+    const buy = parseFloat(buyRaw.ast['Amount'] || '0') as number
+    const sell = parseFloat(sellRaw.ast['Amount'] || '1') as number
     const rate = renderFloat(rateRaw.ast['Rate'] || '')
     const orderRate = renderFloat(orderRateRaw.ast['Rate'] || '')
     const computedRate = (buy / sell).toFixed(2)

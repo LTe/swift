@@ -31,12 +31,14 @@ function Generator(): JSX.Element {
   const accounts = useAccountInput([])
 
   function onOrderChange(event: React.FormEvent<HTMLInputElement>): void {
-    const orders = (event.currentTarget.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
+    const target = event.target as HTMLInputElement
+    const orders = (target.value || '').replace(/ :/g, "\n:").split(/\n{2,}/)
     setState({...state, orders: orders.map(parse), rawOrders: orders})
   }
 
   function onTemplateChange(event: React.FormEvent<HTMLInputElement>): void {
-    const templates = (event.currentTarget.value || '').split(/\n{2,}/)
+    const target = event.target as HTMLInputElement
+    const templates = (target.value || '').split(/\n{2,}/)
     setState({...state, templates: templates.map(parse), rawTemplates: templates})
   }
 
@@ -100,10 +102,10 @@ function Generator(): JSX.Element {
       return (
         <Row key={index}>
           <Col>
-            <SyntaxHighlighter language='javascript' style={solarizedlight}>{order}</SyntaxHighlighter>
+            <SyntaxHighlighter className="copiedOrder" language='javascript' style={solarizedlight}>{order}</SyntaxHighlighter>
           </Col>
           <Col>
-            <SyntaxHighlighter language='javascript' style={darcula}>{generateTransactions[index]}</SyntaxHighlighter>
+            <SyntaxHighlighter className="generatedTransaction" language='javascript' style={darcula}>{generateTransactions[index]}</SyntaxHighlighter>
           </Col>
         </Row>
       )

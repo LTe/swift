@@ -166,7 +166,7 @@ function ValidatorWizard(): JSX.Element {
         sellAST = sell.ast
         active = index === state.currentOrderIndex
 
-        if (validOrders.includes(index) && invalidOrders.includes(index)) {
+        if (validOrders.includes(index)) {
           variant = "success"
         } else if (invalidOrders.includes(index)) {
           variant = "danger"
