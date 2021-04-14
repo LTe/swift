@@ -20,7 +20,7 @@
     "react-bootstrap-table": "^4.3.1",
     "react-dom": "^16.8.6",
     "react-json-pretty": "^2.1.0",
-    "react-scripts": "3.2.0",
+    "react-scripts": "4.0.3",
     "react-syntax-highlighter": "^11.0.2",
     "swift-mock": "^0.0.26",
     "typescript": "^3.7.2",
