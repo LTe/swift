@@ -24,7 +24,7 @@
     "react-syntax-highlighter": "^11.0.2",
     "swift-mock": "^0.0.26",
     "typescript": "^3.7.2",
-    "underscore": "^1.9.1"
+    "underscore": "^1.12.1"
   },
   "scripts": {
     "predeploy": "yarn run build",
